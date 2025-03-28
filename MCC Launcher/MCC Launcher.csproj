@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>DXItem1.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\background.png" />
+    <None Remove="Images\icons8-settings-50.png" />
+    <None Remove="Images\Resize image project.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\background.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Resize image project.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DevExpress.Mvvm" Version="22.2.4" />
+    <PackageReference Include="DevExpress.Wpf.Core" Version="22.2.4.0" />
+    <PackageReference Include="DevExpress.Wpf.Themes.All" Version="22.2.4">
+      <GeneratePathProperty>True</GeneratePathProperty>
+    </PackageReference>
+    
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\2075.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\icons8-settings-50.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+</Project>
