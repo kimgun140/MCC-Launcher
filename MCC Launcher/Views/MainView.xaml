@@ -26,10 +26,10 @@
     </UserControl.DataContext>
 
     <Grid>
-        <Border Background="#15171E" >
-            <!--<Border.Background>
+        <Border  >
+            <Border.Background>
                 <ImageBrush ImageSource="/Images/background.png" />
-            </Border.Background>-->
+            </Border.Background>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -131,6 +131,7 @@
                                               />
                                     <MenuItem Header="옵션호환"
                                               Command="{Binding OptionCompatibleCommand}" />
+                                    <MenuItem Header="버전변경" />
 
                                 </ContextMenu>
                             </Button.ContextMenu>
@@ -216,7 +217,7 @@
                                        
                                        />
 
-                            
+
                             
                         </StackPanel>
                     </ScrollViewer>

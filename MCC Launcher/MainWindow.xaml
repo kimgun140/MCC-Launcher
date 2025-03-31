@@ -9,6 +9,8 @@
                  dx:HeaderBackground="#15171E"
                  Padding="0">
     <Grid>
+        <Views:OptionModal />
         <Views:MainView />
+     
     </Grid>
 </dx:ThemedWindow>

@@ -105,4 +105,10 @@ namespace MCC_Launcher
         public Dictionary<string, string> CurrentValues { get; set; } = new();
         public DateTime? LastModified { get; set; }
     }
+    public class Options
+    {
+        public string OptionName { get; set; }
+        public bool OptionChecked { get; set; }
+
+    }
 }

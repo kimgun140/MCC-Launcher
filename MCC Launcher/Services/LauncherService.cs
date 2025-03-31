@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -50,7 +51,7 @@ namespace MCC_Launcher.Services
 
         // 프로그램 설치 폴더 경로 
         public const string installedPath = @"C:\Program Files\LauncherPrograms";
-
+        string schemafile = "OptionSchema.xml";
         //public string XmlFilePaths = Path.Combine(XmlFilePath, "ProgramsPath.xml");
 
         LauncherConfig launcherConfig;
@@ -168,7 +169,7 @@ namespace MCC_Launcher.Services
         {
             const string exefile = "asdfsadf.exe";
             // xml에서 읽어오거나 정해놓거나 
-            string installPath = GetInstallPath(programFolder, versionPath);
+            string installPath = GetInstalledversionPath(programFolder, versionPath);
 
             string exePath = Path.Combine(installPath, exefile);
             if (!File.Exists(exePath))
@@ -207,7 +208,7 @@ namespace MCC_Launcher.Services
             const string file = "ProgramSettings.xml";
 
             // 설치된 프로그램 경로 가져오기
-            string installPath = GetInstallPath(programFolder, versionPath);
+            string installPath = GetInstalledversionPath(programFolder, versionPath);
 
             // 원본 설정 파일 경로
             string sourceFilePath = Path.Combine(installPath, file);
@@ -245,10 +246,11 @@ namespace MCC_Launcher.Services
         public void OptionsImport(string programFolder, string versionPath)
         {
             const string file = "ProgramSettings.xml";
+            // 버전 별로 1개 
 
             // 설치된 프로그램 경로 가져오기
-            string installPath = GetInstallPath(programFolder, versionPath);
-
+            string installPath = GetInstalledversionPath(programFolder, versionPath);
+            string version = Path.GetFileName(versionPath);
             // 원본 설정 파일 경로
             string sourceFilePath = Path.Combine(installPath, file);
 
@@ -257,10 +259,59 @@ namespace MCC_Launcher.Services
             // 선택한 프로그램 버전의 programsettings_v1.0.1.xml를 가져오기 
 
 
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Filter = "xml Files| *.xml";
+            fileDialog.InitialDirectory = backupFolder;
+            string[] filename;
+            string filepath;
+            bool? success = fileDialog.ShowDialog();
+            // 여기서 파일 선택한걸로 버전이 다르면 마이그레이션 할건지 물어보기 
+            // 선택한 버전이랑 옵션파일이랑같은 버전인경우에는 현재 옵션파일을 이걸로 덮어씌우기 할건지 물어보고 실행하기
+            // 백업파일도 여러개 만들 수 있게 해야겠네 
+            if (success == true)
+            {
+                //파일 절대경로, 선택한 백업파일
+                filename = fileDialog.FileNames;
+                filepath = filename[0];
+                //파일이름.확장자
+                string[] fileshortname = fileDialog.SafeFileNames;
+            }
+            else
+            {
+                // 아니면 다시 돌아가기 
+                return;
 
-            string versionFolderName = Path.GetFileName(versionPath); // 예: V1.0
+            }
+            // 선택한 파일의 버전을 seletedProgram 이랑 확인해서 마이그레이션 할건지 물어보기 
+
+
+            string versionFolderName = Path.GetFileName(versionPath); // 예: V1.0.1
+            // 현재 선택되어있는 프로그램 버전 
             string backupFileName = $"ProgramSettings_{versionFolderName}.xml";
-            //버전은 원래 적혀있고 이걸 다시 적어야하나 
+            // export한 백업파일 찾기 
+
+            UserOption user = LoadBackupOption(filepath);
+            // 백업 옵션 파일 로드 
+           if( user.CurrentVersion == version)
+                // 선택한 버전이랑 같으면 덮어 씌울건지 물어보기 
+            {
+
+            }
+            else
+            {
+
+            }
+                // 백업파일 읽기 그냥 경로를 다주고 읽는게 낫겠다. 이것만 쓰는게 
+
+                versionFolderName = Path.GetFileName(versionFolderName);
+
+            var optionDefinitions = new List<OptionDefinition>();
+
+            optionDefinitions = LoadCompatibility(programFolder, versionPath);
+            // 스키마 불러오기 
+
+           //선택한 버전이랑 선택한 백업파일이랑 비교  
+
 
             //백업파일이랑 폴더 경로 붙
             string exportedOptions = Path.Combine(backupFolder, backupFileName);
@@ -273,6 +324,7 @@ namespace MCC_Launcher.Services
 
             using (FileStream sourceStream = new FileStream(exportedOptions, FileMode.Open, FileAccess.Read, FileShare.Read))// 백업폴더에 있는 파일 
             using (FileStream destinationStream = new FileStream(sourceFilePath, FileMode.Create, FileAccess.Write, FileShare.None))// Programsettings.xml에 내용만 옮기기 
+
             {
                 byte[] bytes = new byte[32768];
                 int bytesRead;
@@ -286,11 +338,11 @@ namespace MCC_Launcher.Services
         }
 
         public List<OptionDefinition> LoadCompatibility(string SelectedProgramPath, string SelectedVersion)
-        //스키마 리스트에 있는 버전별 속성 가져오기 
+        //스키마 리스트에 있는 버전별 속성 가져오기 스키마 불러오기
         {
             //
             // 옵션 호환성 관리파일은 selectedProgram.folder에 위치 ,
-            string schemafile = "OptionSchema.xml";
+            //string schemafile = "OptionSchema.xml";
             string compatibilityPath = Path.Combine(SelectedProgramPath, schemafile);
             // 옵션  스키마 위치 
             var versionMap = new Dictionary<string, string>();
@@ -330,8 +382,8 @@ namespace MCC_Launcher.Services
 
             var user = new UserOption
             {
-                Program = userRoot.Element("program")?.Value.Trim(),
-                CurrentVersion = userRoot.Element("version")?.Value.Trim()
+                Program = userRoot.Element("program")?.Value,
+                CurrentVersion = userRoot.Element("version")?.Value
             };
 
             // 나머지 엘리먼트 처리
@@ -342,34 +394,73 @@ namespace MCC_Launcher.Services
 
                 if (elem.Name == "date")
                 {
-                    if (DateTime.TryParse(elem.Value.Trim(), out var parsedDate))
+                    if (DateTime.TryParse(elem.Value, out var parsedDate))
                     {
                         user.LastModified = parsedDate;
                     }
                     continue;
                 }
 
-                user.CurrentValues[elem.Name.LocalName] = elem.Value.Trim();
+                user.CurrentValues[elem.Name.LocalName] = elem.Value;
             }
 
             return user;
         }
+
+        public UserOption LoadBackupOption(string SelectedBackupOption)
+        // import할때 백업 옵션 읽고, 버전 비교
+        {
+            //if()
+            var userdoc = XDocument.Load(SelectedBackupOption);
+            var userRoot = userdoc.Root;
+            var user = new UserOption
+            {
+                Program = userRoot.Element("program")?.Value,
+
+                CurrentVersion = userRoot.Element("version")?.Value
+
+            };
+
+
+            // 나머지 엘리먼트 처리
+            foreach (var elem in userRoot.Elements())
+            {
+                if (elem.Name == "program" || elem.Name == "version")
+                    continue;
+
+                if (elem.Name == "date")
+                {
+                    if (DateTime.TryParse(elem.Value, out var parsedDate))
+                    {
+                        user.LastModified = parsedDate;
+                    }
+                    continue;
+                }
+
+                user.CurrentValues[elem.Name.LocalName] = elem.Value;
+
+            }
+            return user;
+        }
+
+
         public Dictionary<string, string> ConvertUserOption(UserOption user, List<OptionDefinition> compatibilityList, string targetVersion)
         {
+            // 호환성 맞추기 
             var result = new Dictionary<string, string>();
 
             foreach (var option in compatibilityList)
             {
                 string logicKey = option.LogicalName;
 
-                // 현재 사용자가 가진 이름 찾기 (버전 상관 없이)
+                // 현재 사용자가 가진 옵션 이름 찾기 (버전 상관 없이)
                 string currentName = option.VersionNameMap
                     .Values
                     .FirstOrDefault(name => user.CurrentValues.ContainsKey(name));
 
                 // 대상 버전에서 사용할 이름
                 if (!option.VersionNameMap.TryGetValue(targetVersion, out string targetName))
-                    continue; // 이 논리 옵션은 해당 버전에서는 정의되지 않음
+                    continue; // 이 논리 옵션은 해당 버전에서는 존재하지않는 옵션
 
                 // 제거 조건: None
                 if (string.Equals(targetName, "None", StringComparison.OrdinalIgnoreCase))
@@ -392,6 +483,7 @@ namespace MCC_Launcher.Services
             return result;
         }
         public void SaveUpdatedUserOption(string outputPath, string programName, string targetVersion, Dictionary<string, string> updatedValues)
+        //호환성 변경된 내용 xml쓰기 
         {
             var root = new XElement("Option");
             outputPath = Path.Combine(outputPath, "ProgramSettings.xml");
@@ -412,7 +504,7 @@ namespace MCC_Launcher.Services
             var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), root);
             doc.Save(outputPath);
 
-            Console.WriteLine($"변환된 설정이 저장되었습니다: {outputPath}");
+            MessageBox.Show($"변환된 설정이 저장되었습니다: {outputPath}");
         }
 
 
@@ -425,7 +517,7 @@ namespace MCC_Launcher.Services
 
 
         }
-        public string GetInstallPath(string programFolder, string versionPath)
+        public string GetInstalledversionPath(string programFolder, string versionPath)
         // 경로만들기 
         {
             string versionFolderName = Path.GetFileName(versionPath);
@@ -433,11 +525,18 @@ namespace MCC_Launcher.Services
 
             return Path.Combine(installedPath, programFolderName, versionFolderName);
         }
+        public string GetInstalledProgramFolderPath(string programFolder)
+        {
+            string programFolderName = Path.GetFileName(programFolder);
+
+            //로컬 프로그램 폴더 
+            return Path.Combine(installedPath, programFolderName);
+        }
 
         public bool IsProgramInstalled(string programFolder, string versionPath)
         //설치확인
         {
-            string installPath = GetInstallPath(programFolder, versionPath);
+            string installPath = GetInstalledversionPath(programFolder, versionPath);
 
             return Directory.Exists(installPath);
         }
@@ -529,7 +628,7 @@ namespace MCC_Launcher.Services
         public async Task InstallProgram(IProgress<int> progress, string sourcePath, string programFolder, Action<bool> updateVisibility)
         //경로에 설치
         {
-            string fullInstallPath = GetInstallPath(programFolder, sourcePath);
+            string fullInstallPath = GetInstalledversionPath(programFolder, sourcePath);
             await ProgramSetup(progress, sourcePath, fullInstallPath, updateVisibility);
         }
 
@@ -575,13 +674,65 @@ namespace MCC_Launcher.Services
         public void OptionChoice(string LastestVersion, string selectedVersionPath, string programFolderPath)
         {
             //읽어오기 
-            string versionName =   Path.GetFileName(selectedVersionPath);
+            string versionName = Path.GetFileName(selectedVersionPath);
 
             string seletedpath = Path.Combine(selectedVersionPath, versionName);
             // 현재 선택된 버전 폴더 
             string optionfile = Path.Combine(seletedpath, "ProgramSettings.xml");
 
             //최근파일읽기
+        }
+
+        public void OptionLoad()
+        {
+            // 최근 실행한 버전을 체크 
+        }
+        public UserOption? LatestRunVersionRecord(string programFolder, string versionPath)
+        {
+
+            const string file = "ProgramSettings.xml";
+            // 버전 별로 1개 
+
+            // 설치된 프로그램 경로 가져오기
+            string installPath = GetInstalledversionPath(programFolder, versionPath);
+            string version = Path.GetFileName(versionPath);
+            // 원본 설정 파일 경로
+            string sourceFilePath = Path.Combine(installPath, file);
+
+            string programRootPath = Path.GetDirectoryName(installPath); // ProgramA 폴더 경로
+            string backupFolder = Path.Combine(programRootPath, "백업폴더");
+            // 선택한 프로그램 버전의 programsettings_v1.0.1.xml를 가져오기 
+
+            //옵션파일은 현재 실행 버전이랑, 선택된 버전랑 비교
+            //최근 실행버전 기록
+
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Filter = "xml Files| *.xml";
+            fileDialog.InitialDirectory = backupFolder;
+            string[] filename;
+            string filepath;
+            bool? success = fileDialog.ShowDialog();
+            // 여기서 파일 선택한걸로 버전이 다르면 마이그레이션 할건지 물어보기 
+            // 선택한 버전이랑 옵션파일이랑같은 버전인경우에는 현재 옵션파일을 이걸로 덮어씌우기 할건지 물어보고 실행하기
+            // 백업파일도 여러개 만들 수 있게 해야겠네 
+            if (success == true)
+            {
+                //파일 절대경로, 선택한 백업파일
+                filename = fileDialog.FileNames;
+                filepath = filename[0];
+                //파일이름.확장자
+                //string[] fileshortname = fileDialog.SafeFileNames;
+                UserOption user = LoadBackupOption(filepath);
+                return user;
+            }
+            else
+            {
+                // 파일선택안했을떄 
+                return null ;
+
+            }
+   
+
         }
     }
 }
