@@ -4,12 +4,12 @@
                  xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
                  xmlns:Views="clr-namespace:MCC_Launcher.Views"
                  Title="MainWindow"
-                 Height="800"
-                 Width="1000"
+                 Height="520"
+                 Width="830"
                  dx:HeaderBackground="#15171E"
                  Padding="0">
     <Grid>
-        <Views:OptionModal />
+        
         <Views:MainView />
      
     </Grid>

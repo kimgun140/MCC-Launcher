@@ -4,9 +4,16 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
+            <FontFamily x:Key="monster_rat">application:,,,/Font/#Montserrat Thin</FontFamily>
+            <FontFamily x:Key="Aritadoum_Light">application:,,,/Font/#Arita Dotum KR Thin</FontFamily>
+            <FontFamily x:Key="NotoSans">application:,,,/Font/#Noto Sans KR SemiBold</FontFamily>
+            <FontFamily x:Key="Pretendard">application:,,,/Font/#Pretendard</FontFamily>
+            <FontFamily x:Key="NotoSans_Regular">application:,,,/Font/#Noto Sans KR</FontFamily>
+
             <ResourceDictionary.MergedDictionaries>
 
                 <ResourceDictionary Source="/Styles/Style.xaml" />
+                
                 <!--<ResourceDictionary Source="pack://application:,,,/DevExpress.Xpf.Themes.Office2019Colorful.v22.2;component/Themes/Office2019Colorful.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DevExpress.Xpf.Core.v22.2;component/Themes/Generic.xaml" />-->
             </ResourceDictionary.MergedDictionaries>

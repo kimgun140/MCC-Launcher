@@ -43,6 +43,7 @@ namespace MCC_Launcher
                 return null;
             }
         }
+      
     }
 
     public class VersionInfo
@@ -61,6 +62,7 @@ namespace MCC_Launcher
 
         public ObservableCollection<string> PatchNotes { get; set; }
 
+        public bool isInstalled { get; set; }
 
     }
     // 버전별 데이터 
@@ -72,6 +74,8 @@ namespace MCC_Launcher
 
         [XmlElement("PatchNote")]
         public string PatchNote { get; set; }
+
+        public bool isInstalled { get; set; }
     }
 
     // 런처가 가지고 있는 런처에 등록된 프로그램들의 경로
@@ -93,12 +97,14 @@ namespace MCC_Launcher
 
     }
     public class OptionDefinition
+        //스키마
     {
         public string LogicalName { get; set; }
         public string DefaultValue { get; set; }
         public Dictionary<string, string> VersionNameMap { get; set; } = new();
     }
     public class UserOption
+        //사용자 옵션 
     {
         public string Program { get; set; }
         public string CurrentVersion { get; set; }

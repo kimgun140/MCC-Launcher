@@ -8,6 +8,9 @@ using System.Windows.Input;
 using System.Windows.Documents;
 using System.Collections.Generic;
 using System.IO;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using System.Drawing;
+
 //using System.Windows.Forms;
 
 namespace MCC_Launcher.ViewModels
@@ -16,6 +19,9 @@ namespace MCC_Launcher.ViewModels
     {
         private readonly LauncherService fileCopyManager = new LauncherService();
         public ObservableCollection<Program> Programs { get; set; } = new ObservableCollection<Program>();
+
+
+
 
         public string SelectedOption
         // 선택된 옵션 이름 보여주기 
@@ -54,14 +60,13 @@ namespace MCC_Launcher.ViewModels
             set
             {
                 SetValue(value, changedCallback: InstallOrRun);
+            
                 //RaisePropertiesChanged(nameof(SelectedVersion));
                 RaisePropertiesChanged(nameof(PatchNote));
-
+                //변경된거 수동으로 알리기
+                PatchNotes = null;
+                RaisePropertiesChanged(nameof(PatchNotes));
             }
-
-            //set => SetValue(value, changedCallback: InstallOrRun);
-
-
 
         }
         public string ButtonContent
@@ -76,6 +81,20 @@ namespace MCC_Launcher.ViewModels
             set => SetValue(value);
 
         }
+        public ObservableCollection<string> PatchNotes
+        {
+            get => GetValue<ObservableCollection<string>>();
+            set => SetValue(value);
+        }
+        //public bool IsInstalled
+        //{
+        //    get => GetValue<bool>();
+        //    set => SetValue(value);
+        //}
+        IMessageBoxService MessageBoxService { get { return GetService<IMessageBoxService>(); } }
+        
+
+
 
         public DelegateCommand<object> SelectedProgramCommand { get; set; }
         public DelegateCommand LaunchProgramCommand { get; set; }
@@ -84,21 +103,22 @@ namespace MCC_Launcher.ViewModels
         public DelegateCommand backupCommand { get; set; }
         public DelegateCommand OptionsImportCommand { get; set; }
         public DelegateCommand OptionCompatibleCommand { get; set; }
-        //public ICommand<object> SelectedProgramCommand { get; private set; }
+        public DelegateCommand LoadPatchNotesCommand { get; set; }
 
 
         public MainViewModel()
         {
             fileCopyManager.Connection();
             LoadPrograms();
-            //SelectedProgramCommand = new DelegateCommand<object>(SetSeletedProgram);
             SelectedProgramCommand = new DelegateCommand<object>(SetSeletedProgram);
             LaunchProgramCommand = new DelegateCommand(LaunchSelectedVersion);
             DeleteProgramCommand = new DelegateCommand(DeleteProgram);
             RepairProgramCommand = new DelegateCommand(RepairProgram);
-            backupCommand = new DelegateCommand(settingsbackup);
-            OptionsImportCommand = new DelegateCommand(ImportOption);
-            OptionCompatibleCommand = new DelegateCommand(howan);
+            backupCommand = new DelegateCommand(OptionExport);
+            OptionsImportCommand = new DelegateCommand(OptionImport);
+            //LoadPatchNotesCommand = new DelegateCommand(AllPatchNotes);
+
+            //메시지 박스 
 
         }
         private void SetSeletedProgram(object param)
@@ -106,11 +126,16 @@ namespace MCC_Launcher.ViewModels
             if (param is Program seleted)
             {
                 SelectedProgram = seleted;
+
             }
+            PatchNote = null;
+            RaisePropertiesChanged(nameof(PatchNote));
+            AllPatchNotes();
+
         }
 
         private async void LaunchSelectedVersion()
-        // 이거는 비동기 커맨드로 ? 
+        //
         {
             try
             {
@@ -119,31 +144,46 @@ namespace MCC_Launcher.ViewModels
 
                 // 설치 여부 확인 
                 bool isInstalled = fileCopyManager.IsProgramInstalled(SelectedProgram.FolderPath, SelectedVersion.Path);
+                string installPath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
+
 
                 if (isInstalled)
                 {
+                    var result = MessageBoxService.Show(
+                         messageBoxText: $"{SelectedProgram.ProgramName}프로그램을 실행합니다.",
+                         caption: "실행",
+                         button: MessageBoxButton.OK,
+                         MessageBoxImage.Question);
 
-                    MessageBox.Show(" 설치된 프로그램입니다. 실행");
-                    //프로그램 폴더에 버전 폴더 말고 
+
                     var versionname = Path.GetFileName(SelectedVersion.Path);
                     //설치된 프로그램 경로 가져오기 
                     var FolderPath = fileCopyManager.GetInstalledProgramFolderPath(SelectedProgram.FolderPath);
 
                     fileCopyManager.SaveLastUsedVersion(FolderPath, versionname);
 
+                    //실행 
+                    fileCopyManager.RunProgram(SelectedProgram.FolderPath, SelectedVersion.Path);
 
-                    //fileCopyManager.RunProgram(SelectedProgram.FolderPath, SelectedVersion.Path);
 
                     return;
                 }
                 else
                 {
-                    MessageBox.Show("설치합니다");
-                    //설치하기 
-                    var progress = new Progress<int>(value => ProgressBarValue = value);
-                    await fileCopyManager.InstallProgram(progress, SelectedVersion.Path, SelectedProgram.FolderPath, SetProgressBarVisibility);
+                    var result = MessageBoxService.Show(
+                         messageBoxText: $"{SelectedProgram.ProgramName}프로그램을 설치하시겠습니까?.",
+                         caption: "설치",
+                         button: MessageBoxButton.YesNo,
+                         MessageBoxImage.Question);
+                    //MessageBox.Show("설치합니다");
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        //설치하기 
+                        var progress = new Progress<int>(value => ProgressBarValue = value);
+                        await fileCopyManager.InstallProgram(progress, SelectedVersion.Path, SelectedProgram.FolderPath, SetProgressBarVisibility);
 
-                    InstallOrRun(); // UI 버튼 상태 업데이트
+                        InstallOrRun(); // UI 버튼 업데이트
+                    }
                 }
             }
             catch (Exception e)
@@ -155,6 +195,7 @@ namespace MCC_Launcher.ViewModels
 
 
         private void SetProgressBarVisibility(bool isVisible)
+            //값 바꿔주기 
         {
             ProgressBarVisibility = isVisible;
         }
@@ -174,6 +215,7 @@ namespace MCC_Launcher.ViewModels
 
         }
         private void InstallOrRun()
+            //버전선택할때 동작 
         {
             if (SelectedVersion == null)
             {
@@ -181,43 +223,98 @@ namespace MCC_Launcher.ViewModels
                 ButtonContent = "설치";
                 return;
             }
+
             bool isInstalled = fileCopyManager.IsProgramInstalled(SelectedProgram.FolderPath, SelectedVersion.Path);
             SelectedVersion = fileCopyManager.LoadMetaData(SelectedVersion.Path, SelectedVersion);
-            //PatchNote = SelectedVersion.PatchNotes[0].ToString();
+
             PatchNote = SelectedVersion.PatchNote;
 
-            //패치노트 한개뿐  , 파라미터로 들어간 SelectedVersion에서 PatchNotes[0]만 바뀜 
-            // patchnotes
             Flag = isInstalled;
             ButtonContent = Flag ? "실행" : "설치";
 
         }
+
+        private void AllPatchNotes()
+        {
+
+            //SelectedVersion = fileCopyManager.LoadMetaData(SelectedVersion.Path, SelectedVersion);
+            if (SelectedProgram == null)
+                return;
+
+
+            var versioninfo = fileCopyManager.AllPatchNotes(SelectedProgram.FolderPath);
+            // version에 각각 들어 있는데 이걸 각각 표시 해주는게 programs에 들어있는 것들이니까 
+
+            foreach (var version in SelectedProgram.Versions)
+            {
+                string installFolder = Path.Combine(SelectedProgram.FolderPath, version.Path);
+                version.isInstalled = Directory.Exists(installFolder);
+            }
+
+            PatchNotes = versioninfo.PatchNotes;
+
+
+            //var combinedNotes = string.Join(Environment.NewLine + Environment.NewLine, versioninfo.PatchNotes);
+            //PatchNote = combinedNotes;
+        }
         public void DeleteProgram()
         // 삭제
         {
-            if (SelectedProgram == null)
+            if (SelectedProgram == null || SelectedVersion == null)
                 return;
-            MessageBox.Show("프로그램 삭제");
-
-            string fullInstallPath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
-            //프로그램 이름, 버전이름으로 설치된 폴더 경로 만들기 
-            MessageBox.Show("삭제완료");
-            fileCopyManager.deleteDirectory(fullInstallPath);
-            InstallOrRun();
+            //MessageBox.Show("프로그램 삭제");
+            var result = MessageBoxService.ShowMessage(
+                         messageBoxText: $"{SelectedProgram.ProgramName}프로그램을 삭제하시겠습니까 .",
+                         caption: "삭제",
+                         button: MessageButton.YesNoCancel,
+                         icon: MessageIcon.Question);
+            if (result == MessageResult.Yes)
+            {
+                string fullInstallPath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
+                //프로그램 이름, 버전이름으로 설치된 폴더 경로 만들기 
+                fileCopyManager.deleteDirectory(fullInstallPath);
+                InstallOrRun();
+            }
 
         }
         private void RepairProgram()
         {
+            if (SelectedProgram == null || SelectedVersion == null)
+                return;
             //선택된 프로그램 버전을 삭제하고 다시 설치
-            DeleteProgram();
-            //
-            LaunchSelectedVersion();
+            var result = MessageBoxService.ShowMessage(
+                     messageBoxText: $"{SelectedProgram.ProgramName}프로그램을 재설치하시겠습니까?",
+                     caption: "재설치",
+                     button: MessageButton.YesNo,
+                     icon: MessageIcon.Question);
+            if (result == MessageResult.Yes)
+            {
+                //삭제, 재설치
+                DeleteProgram();
+                LaunchSelectedVersion();
+            }
         }
-        private void settingsbackup()
+        private void OptionExport()
         {
+            if (SelectedProgram == null || SelectedVersion == null)
+            {
+                return;
+            }
             //
-            MessageBox.Show("설정 백업");
-            fileCopyManager.OptionExport(SelectedProgram.FolderPath, SelectedVersion.Path);
+            //MessageBox.Show("설정 백업");
+            var result = MessageBoxService.Show(
+                          messageBoxText: $"{SelectedProgram.ProgramName}옵션을 Export하시겠습니까?.",
+                          caption: "옵션 백업",
+                          button: MessageBoxButton.YesNo,
+                          MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                fileCopyManager.OptionExport(SelectedProgram.FolderPath, SelectedVersion.Path);
+
+            }
+
+
         }
 
         private void ImportOptions()
@@ -245,58 +342,60 @@ namespace MCC_Launcher.ViewModels
             // 어떤 버전으로 할건지 선택만 하게 하면된다. 
         }
 
-        private void ImportOption()
-        {
+        private void OptionImport()
+        {//호환성체크 
             //설치 프로그램 폴더
             string installedPath = fileCopyManager.GetInstalledProgramFolderPath(SelectedProgram.FolderPath);
+            // 버전 선택안하면 에러
             string fileversionname = Path.GetFileName(SelectedVersion.Path);
-            var result = fileCopyManager.LatestRunVersionRecord(SelectedProgram.FolderPath, SelectedVersion.Path);
+
+            var record = fileCopyManager.LatestRunVersionRecord(SelectedProgram.FolderPath, SelectedVersion.Path);
             string installPath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
-            if (result == null)
+            if (record == null)
             // 선택안했을때 null  
             {
                 return;
 
             }
-            var backupOption = result;
+            var backupOption = record;
             string selectedVersion = Path.GetFileName(SelectedVersion.Path);
-            if (backupOption.CurrentVersion != selectedVersion)
-            // 버전이 다른경우
-            {
-                if (MessageBox.Show("선택한 옵션으로 마이그레이션 하시겠습니까? \n 기존 옵션에 덮어쓰기 됩니다.", "YesOrNoe", MessageBoxButton.YesNoCancel) == MessageBoxResult.Yes)
-                {
-                    // 마이그레이션하기 
-                    List<OptionDefinition> OptionDefinition = new List<OptionDefinition>();
-                    OptionDefinition = fileCopyManager.LoadCompatibility(SelectedProgram.FolderPath, SelectedVersion.Path);
 
-                    var newresult = fileCopyManager.ConvertUserOption(backupOption, OptionDefinition, fileversionname);
-                    fileCopyManager.SaveUpdatedUserOption(installPath, SelectedProgram.ProgramName, fileversionname, newresult);
-                    MessageBox.Show($"{selectedVersion}이 {backupOption.CurrentVersion}로 마이그레이션 됐습니다. ");
-                }
-                else
+            if (backupOption.CurrentVersion != selectedVersion)
+            {
+                var result = MessageBoxService.Show(
+                    "선택한 옵션을 적용하시겠습니까?\n기존 옵션에 덮어쓰기 됩니다.",
+                    "옵션 마이그레이션",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
                 {
-                    //사용자 취소선택 
-                    MessageBox.Show("no");
-                    return;
+                    var defs = fileCopyManager.LoadCompatibility(SelectedProgram.FolderPath, SelectedVersion.Path);
+                    var newOption = fileCopyManager.ConvertUserOption(backupOption, defs, fileversionname);
+                    fileCopyManager.SaveUpdatedUserOption(installPath, SelectedProgram.ProgramName, fileversionname, newOption);
+
+                    //MessageBoxService.Show($"{selectedVersion}이 {backupOption.CurrentVersion}로 마이그레이션 됐습니다.");
+                    MessageBoxService.Show($" {backupOption.CurrentVersion}로 옵션이 적용되었습니다.");
+
                 }
             }
             else
             {
-                if (MessageBox.Show("선택한 버전과 동일한 버전의 옵션파일입니다. 덮어쓰기 하겠습니까?", "YesOrNo", MessageBoxButton.YesNoCancel) == MessageBoxResult.Yes)
+                var result = MessageBoxService.Show(
+                    "선택한 버전과 동일한 버전의 옵션파일입니다. 덮어쓰기 하겠습니까?",
+                    "옵션 덮어쓰기",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
                 {
-                    //같은 버전을 선택해서 덮어쓰기 선택
-                    List<OptionDefinition> OptionDefinition = new List<OptionDefinition>();
-                    OptionDefinition = fileCopyManager.LoadCompatibility(SelectedProgram.FolderPath, SelectedVersion.Path);
-                    var newresult = fileCopyManager.ConvertUserOption(backupOption, OptionDefinition, fileversionname);
-                    fileCopyManager.SaveUpdatedUserOption(installPath, SelectedProgram.ProgramName, fileversionname, newresult);
-
-
-
+                    var defs = fileCopyManager.LoadCompatibility(SelectedProgram.FolderPath, SelectedVersion.Path);
+                    var newOption = fileCopyManager.ConvertUserOption(backupOption, defs, fileversionname);
+                    fileCopyManager.SaveUpdatedUserOption(installPath, SelectedProgram.ProgramName, fileversionname, newOption);
                 }
-                else { MessageBox.Show("no"); return; }
             }
         }
-
+       
 
     }
 }

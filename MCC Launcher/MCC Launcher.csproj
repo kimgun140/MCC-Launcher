@@ -12,14 +12,81 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Font\AritaDotumKR-Light.ttf" />
+    <None Remove="Font\Montserrat-VariableFont_wght.ttf" />
+    <None Remove="Font\NotoSansKR-Regular.ttf" />
+    <None Remove="Font\NotoSansKR-SemiBold.ttf" />
+    <None Remove="Font\NotoSansKR-VariableFont_wght.ttf" />
+    <None Remove="Font\Pretendard-Regular.ttf" />
+    <None Remove="Images\2025년 4월 1일 오후 05_30_11.png" />
+    <None Remove="Images\2025년 4월 1일 오후 05_30_15.png" />
     <None Remove="Images\background.png" />
+    <None Remove="Images\ChatGPT Image 2025년 4월 1일 오후 04_51_16.png" />
+    <None Remove="Images\ChatGPT Image 2025년 4월 1일 오후 05_34_43.png" />
     <None Remove="Images\icons8-settings-50.png" />
     <None Remove="Images\Resize image project.png" />
+    <None Remove="Images\리사이즈로고.png" />
+    <None Remove="Images\배경검정보라로고.png" />
+    <None Remove="Images\배경로고.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Font\AritaDotumKR-Light.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Font\Montserrat-VariableFont_wght.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Font\NotoSansKR-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Font\NotoSansKR-SemiBold.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Font\NotoSansKR-VariableFont_wght.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Font\Pretendard-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\리사이즈로고.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\2025년 4월 1일 오후 05_30_15.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\2025년 4월 1일 오후 05_30_11.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\배경검정보라로고.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\검정배경로고.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\배경로고.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\투명배경보라로고.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ChatGPT Image 2025년 4월 1일 오후 04_51_16.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Images\background.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ChatGPT Image 2025년 4월 1일 오후 05_34_43.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\Resize image project.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

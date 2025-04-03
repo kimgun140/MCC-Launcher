@@ -103,12 +103,15 @@ namespace MCC_Launcher.Services
                 using (StreamReader reader = new StreamReader(programXmlPath))
                 {
                     programData = (Program)programSerializer.Deserialize(reader);
+                   
                 }
 
 
+                //programData.Versions.isInstalled = IsProgramInstalled(programpath, folder);
                 programData.FolderPath = programFolder;
                 programData.IconPath = Path.Combine(programFolder, programData.IconPath);
-
+                //programData.ProgramName = ;
+                // 버전 경로 넣고 폴더 있으면 설치된거이
 
 
 
@@ -119,8 +122,57 @@ namespace MCC_Launcher.Services
             return programs;
 
         }
+        public VersionInfo AllPatchNotes(string selectedProgram)
+        //패치노트들만 읽기 
+        {
+            var programFolders = Directory.GetDirectories(launcherConfig.ProgramsFolder);
+            var programpath = Path.GetFullPath(selectedProgram);
+            // 프로그램들 폴더 \\Gms-mcc-nas01\audio-file\test1\programs
+            VersionInfo version = new VersionInfo();
+
+            version.PatchNotes = new ObservableCollection<string>();
+
+            //var programpath = Path.GetFileName(selectedProgram);
+            var path = Path.Combine(programFolders[0], programpath);
+            //[0]이 아니네 
+            var folders = Directory.GetDirectories(path);
+            if (folders == null)
+            {
+                return version;
+            }
+            foreach (var folder in folders)
+            {
+                string programXmlPath = Path.Combine(folder, "ProgramMetaData.xml");
+                XmlSerializer programSerializer = new XmlSerializer(typeof(ProgramMetaData));
+                using (StreamReader reader = new StreamReader(programXmlPath))
+                {
+
+                    ProgramMetaData metaData = (ProgramMetaData)programSerializer.Deserialize(reader);
+
+                    //var versionPath=  Path.Combine(folder, metaData.Version);//경로
+                    //var versionPath = metaData.Version;// 버전숫자 
+
+                    //여기서 설치되었느지 검사해서 넣기 
+
+                    version.PatchNote = metaData.PatchNote; // 
+                                                            //metaData.isInstalled = IsProgramInstalled(programpath, folder); ;
+
+                    //version.isInstalled = metaData.isInstalled;
 
 
+                    version.PatchNotes.Add(metaData.PatchNote);
+                    //version.isInstalled = true;
+                    //패치노트가 patch notes
+
+
+                }
+            }
+            return version;
+        }
+        //private void asdf()
+        //{
+
+        //}
 
         public void Connection()
         {
@@ -167,14 +219,14 @@ namespace MCC_Launcher.Services
 
         public void RunProgram(string programFolder, string versionPath)
         {
-            const string exefile = "asdfsadf.exe";
+            const string exefile = "ConsoleApp.exe";
             // xml에서 읽어오거나 정해놓거나 
             string installPath = GetInstalledversionPath(programFolder, versionPath);
 
             string exePath = Path.Combine(installPath, exefile);
             if (!File.Exists(exePath))
             {
-                MessageBox.Show("실행할 파일이 없습니다.");
+                //MessageBox.Show("실행할 파일이 없습니다.");
                 return;
             }
             try
@@ -226,7 +278,7 @@ namespace MCC_Launcher.Services
             string backupFilePath = Path.Combine(backupFolder, backupFileName);
             if (!File.Exists(sourceFilePath))
             {
-                MessageBox.Show("백업할 설정 파일이 없습니다.");
+                //MessageBox.Show("백업할 설정 파일이 없습니다.");
                 return;
             }
             // 파일 복사
@@ -241,7 +293,7 @@ namespace MCC_Launcher.Services
                 }
             }
 
-            MessageBox.Show($"백업 완료: {backupFilePath}");
+            //MessageBox.Show($"백업 완료: {backupFilePath}");
         }
         public void OptionsImport(string programFolder, string versionPath)
         {
@@ -292,8 +344,8 @@ namespace MCC_Launcher.Services
 
             UserOption user = LoadBackupOption(filepath);
             // 백업 옵션 파일 로드 
-           if( user.CurrentVersion == version)
-                // 선택한 버전이랑 같으면 덮어 씌울건지 물어보기 
+            if (user.CurrentVersion == version)
+            // 선택한 버전이랑 같으면 덮어 씌울건지 물어보기 
             {
 
             }
@@ -301,16 +353,16 @@ namespace MCC_Launcher.Services
             {
 
             }
-                // 백업파일 읽기 그냥 경로를 다주고 읽는게 낫겠다. 이것만 쓰는게 
+            // 백업파일 읽기 그냥 경로를 다주고 읽는게 낫겠다. 이것만 쓰는게 
 
-                versionFolderName = Path.GetFileName(versionFolderName);
+            versionFolderName = Path.GetFileName(versionFolderName);
 
             var optionDefinitions = new List<OptionDefinition>();
 
             optionDefinitions = LoadCompatibility(programFolder, versionPath);
             // 스키마 불러오기 
 
-           //선택한 버전이랑 선택한 백업파일이랑 비교  
+            //선택한 버전이랑 선택한 백업파일이랑 비교  
 
 
             //백업파일이랑 폴더 경로 붙
@@ -318,7 +370,7 @@ namespace MCC_Launcher.Services
             if (!File.Exists(exportedOptions))
             {
                 // 백업해놓은 옵션이 없는 거 
-                MessageBox.Show($"import 할 옵션파일이 없습니다.: {backupFileName}");
+                //MessageBox.Show($"import 할 옵션파일이 없습니다.: {backupFileName}");
                 return;
             }
 
@@ -333,7 +385,7 @@ namespace MCC_Launcher.Services
                     destinationStream.Write(bytes, 0, bytesRead);
                 }
             }
-            MessageBox.Show($"import 완료: {backupFileName}");
+            //MessageBox.Show($"import 완료: {backupFileName}");
 
         }
 
@@ -374,6 +426,7 @@ namespace MCC_Launcher.Services
         }
 
         public UserOption LoadUserOption(string installedPath)
+        //사용자 옵션읽기 
         {
             string optionfile = "ProgramSettings.xml";
             string userConfigPath = Path.Combine(installedPath, optionfile);
@@ -504,18 +557,7 @@ namespace MCC_Launcher.Services
             var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), root);
             doc.Save(outputPath);
 
-            MessageBox.Show($"변환된 설정이 저장되었습니다: {outputPath}");
-        }
-
-
-
-
-
-        public void Log(string str)
-        {
-
-
-
+            //MessageBox.Show($"변환된 설정이 저장되었습니다: {outputPath}");
         }
         public string GetInstalledversionPath(string programFolder, string versionPath)
         // 경로만들기 
@@ -542,6 +584,7 @@ namespace MCC_Launcher.Services
         }
 
 
+
         public async void deleteDirectory(string InstalledDir)
         //삭제
         {
@@ -551,7 +594,7 @@ namespace MCC_Launcher.Services
             {
                 if (string.IsNullOrEmpty(InstalledDir) || !Directory.Exists(InstalledDir))
                 {
-                    MessageBox.Show("삭제할 폴더가 존재하지 않습니다.");
+                    //MessageBox.Show("삭제할 폴더가 존재하지 않습니다.");
                     return;
                 }
                 foreach (string file in Directory.GetFiles(InstalledDir))
@@ -620,7 +663,7 @@ namespace MCC_Launcher.Services
                 }
             }
             SetProgressBarVisibility(false);
-            MessageBox.Show("설치완료");
+            //MessageBox.Show("설치완료");
             //progress.Report(100);
         }
 
@@ -655,6 +698,7 @@ namespace MCC_Launcher.Services
                 return version;
             }
         }
+
         public void SaveLastUsedVersion(string programFolderPath, string versionName)
         {
             string recordFilePath = Path.Combine(programFolderPath, "last_used_version.txt");
@@ -728,10 +772,10 @@ namespace MCC_Launcher.Services
             else
             {
                 // 파일선택안했을떄 
-                return null ;
+                return null;
 
             }
-   
+
 
         }
     }
