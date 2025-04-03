@@ -48,20 +48,18 @@
                     <MenuItem />
                     <MenuItem />
                     <MenuItem />
-                    <MenuItem Command="{Binding backupCommand }" />
+                    <MenuItem />
 
                 </ContextMenu>
             </Setter.Value>
         </Setter>
 
-        <Setter Property="FontFamily"
-                Value="pack://application:,,,/Font/NanumGothic.ttf" />
+        <!--<Setter Property="FontFamily"
+                Value="pack://application:,,,/Font/NanumGothic.ttf" />-->
         <Setter Property="FontWeight"
                 Value="Bold" />
-
         <Setter Property="FontSize"
                 Value="20"></Setter>
-
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">

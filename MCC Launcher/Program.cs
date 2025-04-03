@@ -16,6 +16,9 @@ namespace MCC_Launcher
         [XmlElement("Name")]
         public string ProgramName { get; set; }
 
+        [XmlElement("Description")]
+        public string Description { get; set; }
+
         [XmlIgnore] // 폴더 경로는 직렬화하지 않음
         public string FolderPath { get; set; }
 

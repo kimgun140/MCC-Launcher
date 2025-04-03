@@ -6,6 +6,7 @@
                  Title="MainWindow"
                  Height="520"
                  Width="830"
+                 ResizeMode="CanMinimize"
                  dx:HeaderBackground="#15171E"
                  Padding="0">
     <Grid>

@@ -35,26 +35,27 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="3*" />
-
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="80" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition />
+                    
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Column="1"
                       Grid.Row="0"
-                      Width="auto"
-                      Background="#151515">
+                      Width="620"
+                      Background="#151515"
+                      HorizontalAlignment="Right"
+                      Margin="0">
                     <Border BorderBrush="#1F1F1F"
-                            BorderThickness="1, 0, 0, 0">
+                            BorderThickness="1 0 0 0 ">
                         <DockPanel VerticalAlignment="Top"
                                    HorizontalAlignment="Stretch"
                                    Width="auto">
                             <ScrollViewer VerticalScrollBarVisibility="Disabled"
                                           HorizontalScrollBarVisibility="Hidden">
                                 <ItemsControl ItemsSource="{Binding Programs}"
-                                              Background="#151515">
+                                              HorizontalAlignment="Left">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <StackPanel Orientation="Horizontal" />
@@ -66,7 +67,7 @@
                                                     Command="{Binding DataContext.SelectedProgramCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}">
 
-                                                <StackPanel Orientation="Vertical">
+                                                <StackPanel Orientation="Horizontal">
                                                     <Image Source="{Binding IconSource}" />
                                                     <TextBlock Text="{Binding ProgramName}"
                                                                FontSize="12" />
@@ -84,29 +85,29 @@
                            Grid.Column="0"
                            Background="Transparent"
                            Width="180"
+                           Height="auto"
                            HorizontalAlignment="Center"
                            Margin="0 0 0 0">
 
                     <TextBlock DockPanel.Dock="Top"
                                Text="{Binding SelectedProgram.ProgramName }"
-                               FontFamily="{StaticResource NotoSans}"
+                               FontFamily="{StaticResource  NotoSans_Regular  }"
                                FontWeight="Bold"
-                               FontSize="48"
-                               
-                               ></TextBlock>
-
-                    <!--<Image DockPanel.Dock="Top"
-                           Margin="10 10 0 50"
-                           Source="/Images/리사이즈로고.png"
-                           Height="100"
-                           Stretch="Uniform" />-->
-                    <!--<Button Style="{StaticResource BtnContent}"
-                            Content="런처 샵" />
-                    <Button Style="{StaticResource BtnContent}"
-                            Content="토론장" />-->
-                    <!--<Button  Style="{StaticResource BtnContent}"
-                             Command="{Binding LoadPatchNotesCommand}"
-                             Content="패치노트" />-->
+                               FontSize="32"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Margin=" 0 40 0 20 "></TextBlock>
+                    <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="{Binding SelectedProgram.Description }"
+                                   FontFamily="{StaticResource NotoSans_Regular}"
+                                   FontWeight="DemiBold"
+                                   TextWrapping="Wrap"
+                                   Margin="0 20 0 0 "
+                                   Height="auto"
+                                   FontSize="18"></TextBlock>
+                    </ScrollViewer>
                     <Grid DockPanel.Dock="Bottom">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
@@ -118,11 +119,12 @@
 
                         <Button DockPanel.Dock="Bottom"
                                 Grid.Row="1"
-                                Height="50"
+                                
                                 VerticalAlignment="Bottom"
                                 HorizontalAlignment="Left"
                                 Margin="0 10 0 40"
                                 Width="160"
+                                Height="50"
                                 Background="#0074E0"
                                 Foreground="White"
                                 Content="{Binding ButtonContent}"
@@ -179,6 +181,7 @@
                               DockPanel.Dock="Bottom"
                               Height="30"
                               VerticalAlignment="Bottom"
+                              FontFamily="{StaticResource NotoSans_Regular}"
                               FontSize="16">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -193,49 +196,22 @@
                     </ComboBox>
 
                 </DockPanel>
-                <DockPanel Grid.Row="1"
-                           Grid.Column="1"
-                           Margin="0"
-                           Width="auto"
+                <DockPanel Grid.Column="1"
+                           Width="620"
+                           Height="auto"
+                           HorizontalAlignment="Right"
+                           Margin="0 80 0 0"
                            Background="#151515">
                     <Border BorderBrush="#1F1F1F"
-                            BorderThickness="0.5 0 0 0">
+                            BorderThickness="1 0 0 0 ">
                         <ScrollViewer VerticalScrollBarVisibility="Hidden"
                                       HorizontalScrollBarVisibility="Hidden"
                                       CanContentScroll="True"
+                                      Margin="20"
                                       Height="auto"
                                       MaxHeight="1240">
-                            <DockPanel>
-                                <!--<Border CornerRadius="8,8,8,8"
-                                    ClipToBounds="True"
-                                    Width="600"
-                                    Height="200">
-                                <Border.Background>
-                                    <ImageBrush Stretch="Fill"
-                                                ImageSource="/Images/2075.jpg" />
-                                </Border.Background>
-                                <Border.OpacityMask>
-                                    <LinearGradientBrush StartPoint="0,0"
-                                                         EndPoint="0,1">
-                                        <GradientStop Offset="0.2"
-                                                      Color="#000000" />
-                                        <GradientStop Offset="1"
-                                                      Color="#00000000" />
-                                    </LinearGradientBrush>
-                                </Border.OpacityMask>
-                            </Border>-->
-                                <!--<TextBlock Grid.Row="1"
-                                       HorizontalAlignment="Right"
-                                       FontSize="16"
-                                       Text="{Binding PatchNote}"
+                            <DockPanel Margin="30 0 0 0">
 
-                                       Width="600"
-                                       Margin="10"
-                                       LineHeight="30" />-->
-                                <!--<Image Source="/Images/리사이즈로고.png"
-                                   Stretch="Fill"
-                                   DockPanel.Dock="Top"
-                                   HorizontalAlignment="Center" />-->
                                 <TextBlock Grid.Row="1"
                                            Background="Transparent"
                                            Foreground="White"
@@ -245,11 +221,9 @@
                                            FontSize="16"
                                            HorizontalAlignment="Stretch"
                                            Width="auto"
-                                           LineHeight="30"
                                            DockPanel.Dock="Top" />
                                 <ItemsControl ItemsSource="{Binding PatchNotes}">
                                     <ItemsControl.ItemTemplate>
-
                                         <DataTemplate>
                                             <TextBlock x:Name="patchnotes"
                                                        Text="{Binding}"
