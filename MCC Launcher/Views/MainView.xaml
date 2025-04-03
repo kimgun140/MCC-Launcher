@@ -87,8 +87,13 @@
                            HorizontalAlignment="Center"
                            Margin="0 0 0 0">
 
-                                <TextBlock DockPanel.Dock="Top"
-                                           Text="{Binding SelectedProgram.ProgramName }"></TextBlock>
+                    <TextBlock DockPanel.Dock="Top"
+                               Text="{Binding SelectedProgram.ProgramName }"
+                               FontFamily="{StaticResource NotoSans}"
+                               FontWeight="Bold"
+                               FontSize="48"
+                               
+                               ></TextBlock>
 
                     <!--<Image DockPanel.Dock="Top"
                            Margin="10 10 0 50"
