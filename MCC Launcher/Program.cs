@@ -19,6 +19,9 @@ namespace MCC_Launcher
         [XmlIgnore] // 폴더 경로는 직렬화하지 않음
         public string FolderPath { get; set; }
 
+        [XmlElement("Description")]
+        public string Description { get; set; }
+
         [XmlArray("Versions")]
         [XmlArrayItem("Version")]
         public ObservableCollection<VersionInfo> Versions { get; set; } = new ObservableCollection<VersionInfo>(); // 버전 목록
