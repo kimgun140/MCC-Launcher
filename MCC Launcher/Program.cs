@@ -43,11 +43,12 @@ namespace MCC_Launcher
                 return null;
             }
         }
-      
+        //public string Description { get; set; } // 프로그램 설명
+
     }
 
     public class VersionInfo
-        //programmetadata.xml
+    //programmetadata.xml
     {
         [XmlElement("Number")]
         public string Number { get; set; }
@@ -97,24 +98,38 @@ namespace MCC_Launcher
 
     }
     public class OptionDefinition
-        //스키마
+    //스키마
     {
         public string LogicalName { get; set; }
         public string DefaultValue { get; set; }
         public Dictionary<string, string> VersionNameMap { get; set; } = new();
     }
     public class UserOption
-        //사용자 옵션 
+    //사용자 옵션 
     {
         public string Program { get; set; }
         public string CurrentVersion { get; set; }
         public Dictionary<string, string> CurrentValues { get; set; } = new();
         public DateTime? LastModified { get; set; }
     }
-    public class Options
-    {
-        public string OptionName { get; set; }
-        public bool OptionChecked { get; set; }
 
+    public class SoftwareVersion
+    {
+        public string Code { get; set; }
+        public string Version { get; set; }
+        public List<OptionCategory> OptionCategories { get; set; } = new List<OptionCategory>();
     }
+    public class OptionCategory// SystemOption, GPIOOption, KeyboardOption
+    {
+        public string FilePath { get; set; }
+        public string CategoryName { get; set; }
+        public List<OptionProperty> OptionProperties { get; set; } = new List<OptionProperty>();
+    }
+    public class OptionProperty
+    {
+        public string Name { get; set; }
+        public string TypeOrValue { get; set; }
+        public string refName { get; set; }
+    }
+
 }

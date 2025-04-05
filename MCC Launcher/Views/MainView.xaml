@@ -12,16 +12,15 @@
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core">
 
     <UserControl.Resources>
-
         <QuadraticEase x:Key="EaseOut"
                        EasingMode="EaseOut" />
-
         <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter" />
-
     </UserControl.Resources>
+
     <UserControl.DataContext>
         <ViewModels:MainViewModel />
     </UserControl.DataContext>
+
     <dxmvvm:Interaction.Behaviors>
         <dx:DXMessageBoxService />
     </dxmvvm:Interaction.Behaviors>
@@ -35,22 +34,22 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="3*" />
-
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="80" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Column="1"
+                <Grid Grid.Column="0"
                       Grid.Row="0"
-                      Width="auto"
-                      Background="#151515">
-                    <Border BorderBrush="#1F1F1F"
-                            BorderThickness="1, 0, 0, 0">
+                      Background="Transparent"
+                      HorizontalAlignment="Stretch"
+                      Margin="0">
+                    <Border>
                         <DockPanel VerticalAlignment="Top"
                                    HorizontalAlignment="Stretch"
-                                   Width="auto">
+                                   Width="auto"
+                                   Background="#3F3F3F">
                             <ScrollViewer VerticalScrollBarVisibility="Disabled"
                                           HorizontalScrollBarVisibility="Hidden">
                                 <ItemsControl ItemsSource="{Binding Programs}"
@@ -65,7 +64,6 @@
                                             <Button Style="{StaticResource menuButton}"
                                                     Command="{Binding DataContext.SelectedProgramCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}">
-
                                                 <StackPanel Orientation="Vertical">
                                                     <Image Source="{Binding IconSource}" />
                                                     <TextBlock Text="{Binding ProgramName}"
@@ -80,119 +78,127 @@
                     </Border>
                 </Grid>
 
-                <DockPanel Grid.Row="1"
-                           Grid.Column="0"
-                           Background="Transparent"
-                           Width="180"
-                           HorizontalAlignment="Center"
-                           Margin="0 0 0 0">
+                <Border Grid.Row="1"
+                        BorderBrush="Black">
+                    <DockPanel Grid.Row="1"
+                               Grid.Column="0"
+                               Background="Transparent"
+                               Width="180"
+                               HorizontalAlignment="Left"
+                               Margin="0 0 0 0">
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="{Binding SelectedProgram.ProgramName }"
+                                   FontFamily="{StaticResource NotoSans}"
+                                   FontWeight="Bold"
+                                   FontSize="28"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   MaxHeight="60"
+                                   Margin="0 30 0 20" />
 
-                    <TextBlock DockPanel.Dock="Top"
-                               Text="{Binding SelectedProgram.ProgramName }"
-                               FontFamily="{StaticResource NotoSans}"
-                               FontWeight="Bold"
-                               FontSize="48"
-                               
-                               ></TextBlock>
+                        <Border Margin="0"
+                                DockPanel.Dock="Top">
+                            <ScrollViewer DockPanel.Dock="Top"
+                                          VerticalScrollBarVisibility="Hidden"
+                                          MaxHeight="100">
+                                <TextBlock DockPanel.Dock="Top"
+                                           Text="{Binding SelectedProgram.Description }"
+                                           FontFamily="{StaticResource NotoSans_Regular}"
+                                           FontWeight="DemiBold"
+                                           TextWrapping="Wrap"
+                                           Margin="10 10 0 0"
+                                           FontSize="16" />
+                            </ScrollViewer>
+                        </Border>
 
-                    <!--<Image DockPanel.Dock="Top"
-                           Margin="10 10 0 50"
-                           Source="/Images/리사이즈로고.png"
-                           Height="100"
-                           Stretch="Uniform" />-->
-                    <!--<Button Style="{StaticResource BtnContent}"
-                            Content="런처 샵" />
-                    <Button Style="{StaticResource BtnContent}"
-                            Content="토론장" />-->
-                    <!--<Button  Style="{StaticResource BtnContent}"
-                             Command="{Binding LoadPatchNotesCommand}"
-                             Content="패치노트" />-->
-                    <Grid DockPanel.Dock="Bottom">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition />
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
+                        <Grid DockPanel.Dock="Bottom">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
 
-                        <Button DockPanel.Dock="Bottom"
-                                Grid.Row="1"
-                                Height="50"
-                                VerticalAlignment="Bottom"
-                                HorizontalAlignment="Left"
-                                Margin="0 10 0 40"
-                                Width="160"
-                                Background="#0074E0"
-                                Foreground="White"
-                                Content="{Binding ButtonContent}"
-                                Style="{StaticResource startbtn}"
-                                Command="{Binding LaunchProgramCommand}" />
+                            <Button DockPanel.Dock="Bottom"
+                                    Grid.Row="1"
+                                    VerticalAlignment="Bottom"
+                                    HorizontalAlignment="Left"
+                                    Margin="0 10 0 40"
+                                    Width="160"
+                                    Height="50"
+                                    Background="#0074E0"
+                                    Foreground="White"
+                                    Content="{Binding ButtonContent}"
+                                    Style="{StaticResource startbtn}"
+                                    Command="{Binding LaunchProgramCommand}" />
 
-                        <Button x:Name="setting"
-                                DockPanel.Dock="Bottom"
-                                HorizontalAlignment="Right"
-                                Grid.Row="1"
-                                Width="50"
-                                Height="50"
-                                Margin="20 10 0 40"
-                                Style="{StaticResource settingbutton}"
-                                Background="#0074E0"
-                                Foreground="White"
-                                VerticalAlignment="Bottom">
-                            <Button.ContextMenu>
-                                <ContextMenu>
-                                    <!--<MenuItem Header="Settings" />-->
-                                    <MenuItem Header="삭제"
-                                              Command="{Binding DeleteProgramCommand}"
-                                              IsEnabled="{Binding Flag}" />
-                                    <MenuItem Header="리페어"
-                                              Command="{Binding RepairProgramCommand}" />
-                                    <MenuItem Header="옵션Export"
-                                              Command="{Binding backupCommand}" />
-                                    <MenuItem Header="옵션Import"
-                                              Command="{Binding OptionsImportCommand}" />
-
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                            <StackPanel>
-                                <Image Source="/Images/icons8-settings-50.png"
-                                       Width=" 30" />
-                            </StackPanel>
-                        </Button>
-
-                        <ProgressBar x:Name="progressBar"
-                                     Grid.Row="1"
-                                     DockPanel.Dock="Bottom"
-                                     Height="20"
-                                     VerticalAlignment="Bottom"
-                                     Margin="0 10 0 10"
-                                     Value="{Binding ProgressBarValue}"
-                                     Maximum="100"
-                                     Visibility="{Binding ProgressBarVisibility, Converter={StaticResource boolToVisibilityConverter}}" />
-
-                    </Grid>
-                    <ComboBox Grid.Row="0"
-                              HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding SelectedProgram.Versions}"
-                              SelectedItem="{Binding SelectedVersion}"
-                              DockPanel.Dock="Bottom"
-                              Height="30"
-                              VerticalAlignment="Bottom"
-                              FontSize="16">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Number}" />
-                                    <TextBlock Text=" (설치됨)"
-                                               Foreground="Green"
-                                               Visibility="{Binding isInstalled, Converter={StaticResource boolToVisibilityConverter}}" />
+                            <Button x:Name="setting"
+                                    DockPanel.Dock="Bottom"
+                                    HorizontalAlignment="Right"
+                                    Grid.Row="1"
+                                    Width="50"
+                                    Height="50"
+                                    Margin="20 10 0 40"
+                                    Style="{StaticResource settingbutton}"
+                                    Background="#0074E0"
+                                    Foreground="White"
+                                    VerticalAlignment="Bottom">
+                                <Button.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="삭제"
+                                                  Command="{Binding DeleteProgramCommand}"
+                                                  IsEnabled="{Binding Flag}" />
+                                        <MenuItem Header="리페어"
+                                                  Command="{Binding RepairProgramCommand}" />
+                                        <MenuItem Header="옵션Export"
+                                                  Command="{Binding backupCommand}" />
+                                        <MenuItem Header="옵션Import"
+                                                  Command="{Binding OptionsImportCommand}" />
+                                        <MenuItem Header="versionsload"
+                                                  Command="{Binding LoadVersionsCommand}" />
+                                    </ContextMenu>
+                                </Button.ContextMenu>
+                                <StackPanel>
+                                    <Image Source="/Images/icons8-settings-50.png"
+                                           Width="30" />
                                 </StackPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                            </Button>
 
-                </DockPanel>
+                            <ProgressBar x:Name="progressBar"
+                                         Grid.Row="1"
+                                         DockPanel.Dock="Bottom"
+                                         Height="20"
+                                         VerticalAlignment="Bottom"
+                                         Margin="0 10 0 10"
+                                         Value="{Binding ProgressBarValue}"
+                                         Maximum="100"
+                                         Visibility="{Binding ProgressBarVisibility, Converter={StaticResource boolToVisibilityConverter}}" />
+                        </Grid>
+
+                        <ComboBox Grid.Row="0"
+                                  HorizontalAlignment="Stretch"
+                                  ItemsSource="{Binding SelectedProgram.Versions}"
+                                  SelectedItem="{Binding SelectedVersion}"
+                                  DockPanel.Dock="Bottom"
+                                  Height="30"
+                                  VerticalAlignment="Bottom"
+                                  FontSize="16">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Number}" />
+                                        <TextBlock Text=" (설치됨)"
+                                                   Foreground="Green"
+                                                   Visibility="{Binding isInstalled, Converter={StaticResource boolToVisibilityConverter}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </DockPanel>
+                </Border>
+
                 <DockPanel Grid.Row="1"
                            Grid.Column="1"
                            Margin="0"
@@ -206,36 +212,6 @@
                                       Height="auto"
                                       MaxHeight="1240">
                             <DockPanel>
-                                <!--<Border CornerRadius="8,8,8,8"
-                                    ClipToBounds="True"
-                                    Width="600"
-                                    Height="200">
-                                <Border.Background>
-                                    <ImageBrush Stretch="Fill"
-                                                ImageSource="/Images/2075.jpg" />
-                                </Border.Background>
-                                <Border.OpacityMask>
-                                    <LinearGradientBrush StartPoint="0,0"
-                                                         EndPoint="0,1">
-                                        <GradientStop Offset="0.2"
-                                                      Color="#000000" />
-                                        <GradientStop Offset="1"
-                                                      Color="#00000000" />
-                                    </LinearGradientBrush>
-                                </Border.OpacityMask>
-                            </Border>-->
-                                <!--<TextBlock Grid.Row="1"
-                                       HorizontalAlignment="Right"
-                                       FontSize="16"
-                                       Text="{Binding PatchNote}"
-
-                                       Width="600"
-                                       Margin="10"
-                                       LineHeight="30" />-->
-                                <!--<Image Source="/Images/리사이즈로고.png"
-                                   Stretch="Fill"
-                                   DockPanel.Dock="Top"
-                                   HorizontalAlignment="Center" />-->
                                 <TextBlock Grid.Row="1"
                                            Background="Transparent"
                                            Foreground="White"
@@ -247,22 +223,32 @@
                                            Width="auto"
                                            LineHeight="30"
                                            DockPanel.Dock="Top" />
+
                                 <ItemsControl ItemsSource="{Binding PatchNotes}">
                                     <ItemsControl.ItemTemplate>
-
                                         <DataTemplate>
-                                            <TextBlock x:Name="patchnotes"
-                                                       Text="{Binding}"
-                                                       Foreground="White"
-                                                       FontWeight="UltraBold"
-                                                       FontSize="16"
-                                                       Margin="10,0,10,30"
-                                                       TextWrapping="Wrap"
-                                                       FontFamily="{StaticResource NotoSans_Regular}" />
+                                            <Border Width="500"
+                                                    Height="200"
+                                                    Background="#10FFFFFF"
+                                                    Opacity="0.8"
+                                                    Margin="10">
+                                                <Border.Clip>
+                                                    <RectangleGeometry RadiusX="10"
+                                                                       RadiusY="10"
+                                                                       Rect="0,0,500,200" />
+                                                </Border.Clip>
+                                                <TextBlock x:Name="patchnotes"
+                                                           Text="{Binding}"
+                                                           Foreground="White"
+                                                           FontWeight="Bold"
+                                                           FontSize="16"
+                                                           Margin="10,10,10,30"
+                                                           TextWrapping="Wrap"
+                                                           FontFamily="{StaticResource NotoSans_Regular}" />
+                                            </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-
                             </DockPanel>
                         </ScrollViewer>
                     </Border>

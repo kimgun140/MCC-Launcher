@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using static System.Windows.Forms.Design.AxImporter;
 
 namespace MCC_Launcher.Services
 {
@@ -103,7 +104,7 @@ namespace MCC_Launcher.Services
                 using (StreamReader reader = new StreamReader(programXmlPath))
                 {
                     programData = (Program)programSerializer.Deserialize(reader);
-                   
+
                 }
 
 
@@ -293,172 +294,10 @@ namespace MCC_Launcher.Services
                 }
             }
 
-            //MessageBox.Show($"백업 완료: {backupFilePath}");
-        }
-        public void OptionsImport(string programFolder, string versionPath)
-        {
-            const string file = "ProgramSettings.xml";
-            // 버전 별로 1개 
-
-            // 설치된 프로그램 경로 가져오기
-            string installPath = GetInstalledversionPath(programFolder, versionPath);
-            string version = Path.GetFileName(versionPath);
-            // 원본 설정 파일 경로
-            string sourceFilePath = Path.Combine(installPath, file);
-
-            string programRootPath = Path.GetDirectoryName(installPath); // ProgramA 폴더 경로
-            string backupFolder = Path.Combine(programRootPath, "백업폴더");
-            // 선택한 프로그램 버전의 programsettings_v1.0.1.xml를 가져오기 
-
-
-            OpenFileDialog fileDialog = new OpenFileDialog();
-            fileDialog.Filter = "xml Files| *.xml";
-            fileDialog.InitialDirectory = backupFolder;
-            string[] filename;
-            string filepath;
-            bool? success = fileDialog.ShowDialog();
-            // 여기서 파일 선택한걸로 버전이 다르면 마이그레이션 할건지 물어보기 
-            // 선택한 버전이랑 옵션파일이랑같은 버전인경우에는 현재 옵션파일을 이걸로 덮어씌우기 할건지 물어보고 실행하기
-            // 백업파일도 여러개 만들 수 있게 해야겠네 
-            if (success == true)
-            {
-                //파일 절대경로, 선택한 백업파일
-                filename = fileDialog.FileNames;
-                filepath = filename[0];
-                //파일이름.확장자
-                string[] fileshortname = fileDialog.SafeFileNames;
-            }
-            else
-            {
-                // 아니면 다시 돌아가기 
-                return;
-
-            }
-            // 선택한 파일의 버전을 seletedProgram 이랑 확인해서 마이그레이션 할건지 물어보기 
-
-
-            string versionFolderName = Path.GetFileName(versionPath); // 예: V1.0.1
-            // 현재 선택되어있는 프로그램 버전 
-            string backupFileName = $"ProgramSettings_{versionFolderName}.xml";
-            // export한 백업파일 찾기 
-
-            UserOption user = LoadBackupOption(filepath);
-            // 백업 옵션 파일 로드 
-            if (user.CurrentVersion == version)
-            // 선택한 버전이랑 같으면 덮어 씌울건지 물어보기 
-            {
-
-            }
-            else
-            {
-
-            }
-            // 백업파일 읽기 그냥 경로를 다주고 읽는게 낫겠다. 이것만 쓰는게 
-
-            versionFolderName = Path.GetFileName(versionFolderName);
-
-            var optionDefinitions = new List<OptionDefinition>();
-
-            optionDefinitions = LoadCompatibility(programFolder, versionPath);
-            // 스키마 불러오기 
-
-            //선택한 버전이랑 선택한 백업파일이랑 비교  
-
-
-            //백업파일이랑 폴더 경로 붙
-            string exportedOptions = Path.Combine(backupFolder, backupFileName);
-            if (!File.Exists(exportedOptions))
-            {
-                // 백업해놓은 옵션이 없는 거 
-                //MessageBox.Show($"import 할 옵션파일이 없습니다.: {backupFileName}");
-                return;
-            }
-
-            using (FileStream sourceStream = new FileStream(exportedOptions, FileMode.Open, FileAccess.Read, FileShare.Read))// 백업폴더에 있는 파일 
-            using (FileStream destinationStream = new FileStream(sourceFilePath, FileMode.Create, FileAccess.Write, FileShare.None))// Programsettings.xml에 내용만 옮기기 
-
-            {
-                byte[] bytes = new byte[32768];
-                int bytesRead;
-                while ((bytesRead = sourceStream.Read(bytes, 0, bytes.Length)) > 0)
-                {
-                    destinationStream.Write(bytes, 0, bytesRead);
-                }
-            }
-            //MessageBox.Show($"import 완료: {backupFileName}");
-
         }
 
-        public List<OptionDefinition> LoadCompatibility(string SelectedProgramPath, string SelectedVersion)
-        //스키마 리스트에 있는 버전별 속성 가져오기 스키마 불러오기
-        {
-            //
-            // 옵션 호환성 관리파일은 selectedProgram.folder에 위치 ,
-            //string schemafile = "OptionSchema.xml";
-            string compatibilityPath = Path.Combine(SelectedProgramPath, schemafile);
-            // 옵션  스키마 위치 
-            var versionMap = new Dictionary<string, string>();
 
 
-
-            var doc = XDocument.Load(compatibilityPath);
-            var shcemalist = new List<OptionDefinition>();
-            //스키마 옵션 리스트
-
-            foreach (var OptionElement in doc.Root.Elements("Option"))
-            {
-                var option = new OptionDefinition()
-                {
-                    LogicalName = OptionElement.Attribute("name").Value,
-                    DefaultValue = OptionElement.Element("Default").Value,
-                };
-                foreach (var VersionElement in OptionElement.Elements())
-                {
-                    if (VersionElement.Name == "default")
-                        continue;
-                    string ver = VersionElement.Name.LocalName; // 그대로 사용
-                    option.VersionNameMap[ver] = VersionElement.Value;
-                }
-                shcemalist.Add(option);
-
-            }
-            return shcemalist;
-        }
-
-        public UserOption LoadUserOption(string installedPath)
-        //사용자 옵션읽기 
-        {
-            string optionfile = "ProgramSettings.xml";
-            string userConfigPath = Path.Combine(installedPath, optionfile);
-            var userdoc = XDocument.Load(userConfigPath);
-            var userRoot = userdoc.Root;
-
-            var user = new UserOption
-            {
-                Program = userRoot.Element("program")?.Value,
-                CurrentVersion = userRoot.Element("version")?.Value
-            };
-
-            // 나머지 엘리먼트 처리
-            foreach (var elem in userRoot.Elements())
-            {
-                if (elem.Name == "program" || elem.Name == "version")
-                    continue;
-
-                if (elem.Name == "date")
-                {
-                    if (DateTime.TryParse(elem.Value, out var parsedDate))
-                    {
-                        user.LastModified = parsedDate;
-                    }
-                    continue;
-                }
-
-                user.CurrentValues[elem.Name.LocalName] = elem.Value;
-            }
-
-            return user;
-        }
 
         public UserOption LoadBackupOption(string SelectedBackupOption)
         // import할때 백업 옵션 읽고, 버전 비교
@@ -497,44 +336,7 @@ namespace MCC_Launcher.Services
         }
 
 
-        public Dictionary<string, string> ConvertUserOption(UserOption user, List<OptionDefinition> compatibilityList, string targetVersion)
-        {
-            // 호환성 맞추기 
-            var result = new Dictionary<string, string>();
 
-            foreach (var option in compatibilityList)
-            {
-                string logicKey = option.LogicalName;
-
-                // 현재 사용자가 가진 옵션 이름 찾기 (버전 상관 없이)
-                string currentName = option.VersionNameMap
-                    .Values
-                    .FirstOrDefault(name => user.CurrentValues.ContainsKey(name));
-
-                // 대상 버전에서 사용할 이름
-                if (!option.VersionNameMap.TryGetValue(targetVersion, out string targetName))
-                    continue; // 이 논리 옵션은 해당 버전에서는 존재하지않는 옵션
-
-                // 제거 조건: None
-                if (string.Equals(targetName, "None", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue; // 대상 버전에서는 제거됨
-                }
-
-                if (currentName != null)
-                {
-                    // 사용자가 현재 값을 가지고 있는 경우 → 이름만 바꿔줌
-                    result[targetName] = user.CurrentValues[currentName];
-                }
-                else
-                {
-                    // 사용자가 이 옵션을 가지고 있지 않음 → Default 값 추가
-                    result[targetName] = option.DefaultValue;
-                }
-            }
-
-            return result;
-        }
         public void SaveUpdatedUserOption(string outputPath, string programName, string targetVersion, Dictionary<string, string> updatedValues)
         //호환성 변경된 내용 xml쓰기 
         {
@@ -714,23 +516,10 @@ namespace MCC_Launcher.Services
             }
         }
 
-        //선택하게 하기 ui에 선택하게 만들기 날짜를 보여주면되겠다. xml에 날짜를 추가하기
-        public void OptionChoice(string LastestVersion, string selectedVersionPath, string programFolderPath)
-        {
-            //읽어오기 
-            string versionName = Path.GetFileName(selectedVersionPath);
 
-            string seletedpath = Path.Combine(selectedVersionPath, versionName);
-            // 현재 선택된 버전 폴더 
-            string optionfile = Path.Combine(seletedpath, "ProgramSettings.xml");
 
-            //최근파일읽기
-        }
 
-        public void OptionLoad()
-        {
-            // 최근 실행한 버전을 체크 
-        }
+
         public UserOption? LatestRunVersionRecord(string programFolder, string versionPath)
         {
 
@@ -777,6 +566,265 @@ namespace MCC_Launcher.Services
             }
 
 
+        }
+
+        public List<SoftwareVersion> LoadCompAbilityList(string SelectedProgramPath) //dz 
+        // 읽기 
+        {
+            string Softwareversions = "SoftwareVersions.xml";
+            string SoftwareversionsPath = Path.Combine(SelectedProgramPath, Softwareversions);
+
+            var SoftwareVersionList = new List<SoftwareVersion>();
+            var doc = XDocument.Load(SoftwareversionsPath);
+            foreach (var VersionElement in doc.Root.Elements("SoftwareVersion"))
+            {
+                var version = new SoftwareVersion()
+                {
+                    Code = VersionElement.Attribute("Code").Value,
+                    Version = VersionElement.Attribute("Version").Value,
+                    OptionCategories = new List<OptionCategory>()
+                };
+
+
+                foreach (var CategoryElement in VersionElement.Elements())
+                {
+                    var category = new OptionCategory()
+                    {
+                        CategoryName = CategoryElement.Name.LocalName,// 태그이름 
+                        FilePath = CategoryElement.Attribute("FilePath").Value,
+                        OptionProperties = new List<OptionProperty>()
+                    };
+
+
+                    foreach (var PropertyElement in CategoryElement.Elements())
+                    {
+                        category.OptionProperties.Add(
+                            new OptionProperty
+                            {
+                                Name = PropertyElement.Name.LocalName,
+                                TypeOrValue = PropertyElement.Value,
+                                refName = PropertyElement.Attribute("refName")?.Value
+
+                            });
+
+                    }
+                    version.OptionCategories.Add(category);
+
+                }
+                SoftwareVersionList.Add(version);
+            }
+            return SoftwareVersionList;
+
+        }
+
+        public List<OptionProperty> LoadUserOption2(string installedPath)// dz
+        {
+            var path = Path.Combine(installedPath, "GPIOOption.xml");
+            //string optionfile = "ProgramSettings.xml";
+            List<OptionProperty> optionProperty = new List<OptionProperty>();
+            var userdoc = XDocument.Load(path);
+            var userRoot = userdoc.Root;
+            Dictionary<string, List<OptionProperty>> a  = new Dictionary<string, List<OptionProperty>>();
+            //<optionpropety이름,List<OptionProperty> >
+
+            foreach (var property in userRoot.Elements())
+            {
+                var option = new OptionProperty
+                {
+                    Name = property.Name.LocalName,
+                    TypeOrValue = property.Value,
+                    refName = property.Attribute("refName")?.Value// 사용자 옵션 파일에는 없음 
+                };
+                optionProperty.Add(option);
+            }
+            return optionProperty;
+        }
+
+
+        public Dictionary<string, string> ConvertOptions(List<OptionProperty> CurrnetOption, List<SoftwareVersion> softwareVersions, string TargetVersion)
+        {
+            //  
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            Dictionary<string, List<OptionProperty>> a = new Dictionary<string, List<OptionProperty>>();
+           // 옵션카테고리 구분해서 넣을 수 있게 
+            foreach (var softwareVersion in softwareVersions)
+            {
+                var targetVersionInfo = softwareVersions
+                  .FirstOrDefault(v => v.Version == TargetVersion);
+
+                foreach (var category in targetVersionInfo.OptionCategories)
+                {
+                    foreach (var targetProp in category.OptionProperties)
+                    {
+                        string sourceName = targetProp.refName ?? targetProp.Name;
+
+                        var userValue = CurrnetOption
+                            .FirstOrDefault(p => p.Name == sourceName)?.TypeOrValue;
+
+                        if (userValue != null)
+                            result[targetProp.Name] = userValue;
+                        //키 밸류 넣기 
+                        else
+                            result[targetProp.Name] = targetProp.TypeOrValue;
+
+                    }
+                }
+
+
+            }
+
+
+            return result;
+        }
+
+
+
+        public void SaveUserOptionFile(string filePath, string categoryName, Dictionary<string, string> options)
+        {
+            var root = new XElement(categoryName);
+            foreach (var kvp in options)
+            {
+                root.Add(new XElement(kvp.Key, kvp.Value));
+            }
+
+            var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), root);
+            doc.Save(filePath);
+        }
+
+        private static string GetDefaultValue(string type)
+        {
+            return type switch
+            {
+                "int" => "0",
+                "long" => "0",
+                "string" => string.Empty,
+                _ => string.Empty
+            };
+        }
+
+        public Dictionary<string, string> LoadUserOptionFile(string filePath)
+        {
+            var result = new Dictionary<string, string>();
+            if (!File.Exists(filePath))
+                return result;
+            var doc = XDocument.Load(filePath);
+            var root = doc.Root;
+            if (root == null) return result;
+
+            foreach (var element in root.Elements())
+            {
+                result[element.Name.LocalName] = element.Value.Trim();
+            }
+
+            return result;
+        }
+
+        public UserOption LoadUserOption(string installedPath)
+        //사용자 옵션읽기 
+        {
+            string optionfile = "ProgramSettings.xml";
+            string userConfigPath = Path.Combine(installedPath, optionfile);
+            var userdoc = XDocument.Load(userConfigPath);
+            var userRoot = userdoc.Root;
+
+            var user = new UserOption
+            {
+                Program = userRoot.Element("program")?.Value,
+                CurrentVersion = userRoot.Element("version")?.Value
+            };
+
+            // 나머지 엘리먼트 처리
+            foreach (var elem in userRoot.Elements())
+            {
+                if (elem.Name == "program" || elem.Name == "version")
+                    continue;
+
+                if (elem.Name == "date")
+                {
+                    if (DateTime.TryParse(elem.Value, out var parsedDate))
+                    {
+                        user.LastModified = parsedDate;
+                    }
+                    continue;
+                }
+
+                user.CurrentValues[elem.Name.LocalName] = elem.Value;
+            }
+
+            return user;
+        }
+        public Dictionary<string, string> ConvertUserOption(UserOption user, List<OptionDefinition> compatibilityList, string targetVersion)
+        {
+
+            var result = new Dictionary<string, string>();
+
+            foreach (var option in compatibilityList)
+            {
+                string logicKey = option.LogicalName;
+
+                // 현재 사용자가 가진 옵션 이름 찾기 (버전 상관 없이)
+                string currentName = option.VersionNameMap
+                    .Values
+                    .FirstOrDefault(name => user.CurrentValues.ContainsKey(name));
+
+                // 대상 버전에서 사용할 이름
+                if (!option.VersionNameMap.TryGetValue(targetVersion, out string targetName))
+                    continue; // 이 논리 옵션은 해당 버전에서는 존재하지않는 옵션
+
+                // 제거 조건: None
+                if (string.Equals(targetName, "None", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue; // 대상 버전에서는 제거됨
+                }
+
+                if (currentName != null)
+                {
+                    // 사용자가 현재 값을 가지고 있는 경우 → 이름만 바꿔줌
+                    result[targetName] = user.CurrentValues[currentName];
+                }
+                else
+                {
+                    // 사용자가 이 옵션을 가지고 있지 않음 → Default 값 추가
+                    result[targetName] = option.DefaultValue;
+                }
+            }
+
+            return result;
+        }
+        public List<OptionDefinition> LoadCompatibility(string SelectedProgramPath, string SelectedVersion)
+        //스키마 리스트에 있는 버전별 속성 가져오기 스키마 불러오기
+        {
+            //
+            // 옵션 호환성 관리파일은 selectedProgram.folder에 위치 ,
+            //string schemafile = "OptionSchema.xml";
+            string compatibilityPath = Path.Combine(SelectedProgramPath, schemafile);
+            // 옵션  스키마 위치 
+            var versionMap = new Dictionary<string, string>();
+
+
+
+            var doc = XDocument.Load(compatibilityPath);
+            var shcemalist = new List<OptionDefinition>();
+            //스키마 옵션 리스트
+
+            foreach (var OptionElement in doc.Root.Elements("Option"))
+            {
+                var option = new OptionDefinition()
+                {
+                    LogicalName = OptionElement.Attribute("name").Value,
+                    DefaultValue = OptionElement.Element("Default").Value,
+                };
+                foreach (var VersionElement in OptionElement.Elements())
+                {
+                    if (VersionElement.Name == "default")
+                        continue;
+                    string ver = VersionElement.Name.LocalName; // 그대로 사용
+                    option.VersionNameMap[ver] = VersionElement.Value;
+                }
+                shcemalist.Add(option);
+
+            }
+            return shcemalist;
         }
     }
 }

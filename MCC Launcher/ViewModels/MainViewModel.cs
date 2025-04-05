@@ -60,7 +60,7 @@ namespace MCC_Launcher.ViewModels
             set
             {
                 SetValue(value, changedCallback: InstallOrRun);
-            
+
                 //RaisePropertiesChanged(nameof(SelectedVersion));
                 RaisePropertiesChanged(nameof(PatchNote));
                 //변경된거 수동으로 알리기
@@ -92,7 +92,7 @@ namespace MCC_Launcher.ViewModels
         //    set => SetValue(value);
         //}
         IMessageBoxService MessageBoxService { get { return GetService<IMessageBoxService>(); } }
-        
+
 
 
 
@@ -105,6 +105,9 @@ namespace MCC_Launcher.ViewModels
         public DelegateCommand OptionCompatibleCommand { get; set; }
         public DelegateCommand LoadPatchNotesCommand { get; set; }
 
+        public DelegateCommand LoadVersionsCommand { get; set; }
+
+
 
         public MainViewModel()
         {
@@ -116,6 +119,8 @@ namespace MCC_Launcher.ViewModels
             RepairProgramCommand = new DelegateCommand(RepairProgram);
             backupCommand = new DelegateCommand(OptionExport);
             OptionsImportCommand = new DelegateCommand(OptionImport);
+            LoadVersionsCommand = new DelegateCommand(LoadVersions);
+
             //LoadPatchNotesCommand = new DelegateCommand(AllPatchNotes);
 
             //메시지 박스 
@@ -195,7 +200,7 @@ namespace MCC_Launcher.ViewModels
 
 
         private void SetProgressBarVisibility(bool isVisible)
-            //값 바꿔주기 
+        //값 바꿔주기 
         {
             ProgressBarVisibility = isVisible;
         }
@@ -215,7 +220,7 @@ namespace MCC_Launcher.ViewModels
 
         }
         private void InstallOrRun()
-            //버전선택할때 동작 
+        //버전선택할때 동작 
         {
             if (SelectedVersion == null)
             {
@@ -237,10 +242,8 @@ namespace MCC_Launcher.ViewModels
         private void AllPatchNotes()
         {
 
-            //SelectedVersion = fileCopyManager.LoadMetaData(SelectedVersion.Path, SelectedVersion);
             if (SelectedProgram == null)
                 return;
-
 
             var versioninfo = fileCopyManager.AllPatchNotes(SelectedProgram.FolderPath);
             // version에 각각 들어 있는데 이걸 각각 표시 해주는게 programs에 들어있는 것들이니까 
@@ -253,9 +256,6 @@ namespace MCC_Launcher.ViewModels
 
             PatchNotes = versioninfo.PatchNotes;
 
-
-            //var combinedNotes = string.Join(Environment.NewLine + Environment.NewLine, versioninfo.PatchNotes);
-            //PatchNote = combinedNotes;
         }
         public void DeleteProgram()
         // 삭제
@@ -317,30 +317,26 @@ namespace MCC_Launcher.ViewModels
 
         }
 
-        private void ImportOptions()
-        {
-            //fileCopyManager.OptionsImport(SelectedProgram.FolderPath, SelectedVersion.Path);
-            // 선택한 버전의 백업옵션을 현재 폴더로 옮기기  같은 버전의 백업만 찾아서 옮길 수 있음 
-        }
 
-        private void howan()
-        {
-            string installPath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
-            // 사용자 옵션 파일 위치 폴더 
-            List<OptionDefinition> OptionDefinition = new List<OptionDefinition>();
-            OptionDefinition = fileCopyManager.LoadCompatibility(SelectedProgram.FolderPath, SelectedVersion.Path);
-            //호환성 리스트 파일 
-            UserOption userOptions = new UserOption();
-            userOptions = fileCopyManager.LoadUserOption(installPath);
-            var result = new Dictionary<string, string>();
-            string fileversionname = Path.GetFileName(SelectedVersion.Path);
-            result = fileCopyManager.ConvertUserOption(userOptions, OptionDefinition, fileversionname);
-            // 버전 
-            fileCopyManager.SaveUpdatedUserOption(installPath, SelectedProgram.ProgramName, fileversionname, result);
-            //세이브 되는 경로만 다른 버전으로 바꿔주면 해당버전으로 마이그레이션된 옵션파일 생성됨 
 
-            // 어떤 버전으로 할건지 선택만 하게 하면된다. 
-        }
+        //private void howan()
+        //{
+        //    string installPath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
+        //    // 사용자 옵션 파일 위치 폴더 
+        //    List<OptionDefinition> OptionDefinition = new List<OptionDefinition>();
+        //    OptionDefinition = fileCopyManager.LoadCompatibility(SelectedProgram.FolderPath, SelectedVersion.Path);
+        //    //호환성 리스트 파일 
+        //    UserOption userOptions = new UserOption();
+        //    userOptions = fileCopyManager.LoadUserOption(installPath);
+        //    var result = new Dictionary<string, string>();
+        //    string fileversionname = Path.GetFileName(SelectedVersion.Path);
+        //    result = fileCopyManager.ConvertUserOption(userOptions, OptionDefinition, fileversionname);
+        //    // 버전 
+        //    fileCopyManager.SaveUpdatedUserOption(installPath, SelectedProgram.ProgramName, fileversionname, result);
+        //    //세이브 되는 경로만 다른 버전으로 바꿔주면 해당버전으로 마이그레이션된 옵션파일 생성됨 
+
+        //    // 어떤 버전으로 할건지 선택만 하게 하면된다. 
+        //}
 
         private void OptionImport()
         {//호환성체크 
@@ -395,8 +391,20 @@ namespace MCC_Launcher.ViewModels
                 }
             }
         }
-       
 
+        private void LoadVersions()
+        {
+
+            var reuslt = fileCopyManager.LoadCompAbilityList(SelectedProgram.FolderPath);
+            var path = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
+            var CurrentOption = fileCopyManager.LoadUserOption2(path);
+
+            var versionpath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
+            var TargetVersion = Path.GetFileName(versionpath);
+            // 현재는 선택된 버전이지만 들어가있는 파일이 다른버전이라서 가능하기는 함 바뀌는것만 확인 나중에 파일 다시 쓰기 
+
+            fileCopyManager.ConvertOptions(CurrentOption, reuslt, TargetVersion);
+        }
     }
 }
 
