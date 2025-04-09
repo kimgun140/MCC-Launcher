@@ -18,6 +18,7 @@
     <None Remove="Font\NotoSansKR-SemiBold.ttf" />
     <None Remove="Font\NotoSansKR-VariableFont_wght.ttf" />
     <None Remove="Font\Pretendard-Regular.ttf" />
+    <None Remove="icons\ChatGPT Image 2025년 4월 8일 오전 11_28_06.png" />
     <None Remove="Images\2025년 4월 1일 오후 05_30_11.png" />
     <None Remove="Images\2025년 4월 1일 오후 05_30_15.png" />
     <None Remove="Images\background.png" />
@@ -47,6 +48,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Font\Pretendard-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icons\ChatGPT Image 2025년 4월 8일 오전 11_28_06.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\리사이즈로고.png">
@@ -99,6 +103,7 @@
     <PackageReference Include="DevExpress.Wpf.Themes.All" Version="22.2.4">
       <GeneratePathProperty>True</GeneratePathProperty>
     </PackageReference>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
     
   </ItemGroup>
 
@@ -113,6 +118,7 @@
 
   <ItemGroup>
     <Folder Include="Config\" />
+    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

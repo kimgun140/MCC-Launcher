@@ -156,7 +156,7 @@ namespace MCC_Launcher.Services
                     //여기서 설치되었느지 검사해서 넣기 
 
                     version.PatchNote = metaData.PatchNote; // 
-                                                            //metaData.isInstalled = IsProgramInstalled(programpath, folder); ;
+                                                   version.MainExecutable = metaData.MainExecutable;
 
                     //version.isInstalled = metaData.isInstalled;
 
@@ -218,25 +218,33 @@ namespace MCC_Launcher.Services
             }
         }
 
-        public void RunProgram(string programFolder, string versionPath)
+        public void RunProgram(string programFolder, string versionPath, string ExeFile)
+            // 프로그램 이름을 전달해야겠네 
         {
-            const string exefile = "ConsoleApp.exe";
+          
             // xml에서 읽어오거나 정해놓거나 
             string installPath = GetInstalledversionPath(programFolder, versionPath);
-
-            string exePath = Path.Combine(installPath, exefile);
+            programFolder = Path.GetFileName(programFolder);
+            installPath = Path.Combine(installPath, programFolder);
+            string exePath = Path.Combine(installPath, ExeFile);
             if (!File.Exists(exePath))
             {
-                //MessageBox.Show("실행할 파일이 없습니다.");
-                return;
+                MessageBox.Show("실행할 파일이 없습니다.");
+                //return;
             }
             try
             {
-                Process.Start(new ProcessStartInfo
+
+                ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     FileName = exePath,
+                    WorkingDirectory = installPath,
+                    Arguments = " ",
+                    //ArgumentList = { " ", "" },
+                    Verb = "runas",
                     UseShellExecute = true,
-                });
+                };
+                Process.Start(startInfo);
             }
             catch (Exception e)
             {
@@ -244,15 +252,7 @@ namespace MCC_Launcher.Services
             }
 
 
-            //ProcessStartInfo startInfo = new ProcessStartInfo
-            //{
-            //    FileName = exePath,
-            //    WorkingDirectory = installPath,
-            //    Arguments = " ",
-            //    ArgumentList = { " ", "" },
-            //    Verb = "runas"
-            //};
-            //Process.Start(exePath);
+
 
         }
         public void OptionExport(string programFolder, string versionPath)
@@ -262,6 +262,7 @@ namespace MCC_Launcher.Services
 
             // 설치된 프로그램 경로 가져오기
             string installPath = GetInstalledversionPath(programFolder, versionPath);
+
 
             // 원본 설정 파일 경로
             string sourceFilePath = Path.Combine(installPath, file);
@@ -296,7 +297,35 @@ namespace MCC_Launcher.Services
 
         }
 
+        public void OptionFolderBackup(string programFolder, string versionPath)
+        {
+            string installVersionPath = GetInstalledversionPath(programFolder, versionPath);
+            string configSourceFolder = Path.Combine(installVersionPath, "Config");
 
+            if (!Directory.Exists(configSourceFolder))
+            {
+                MessageBox.Show("Config 폴더가 존재하지 않습니다.");
+                return;
+            }
+
+            // 백업 위치: ProgramA/백업폴더/v1.0.1/Config/
+            string programRootPath = Path.GetDirectoryName(installVersionPath)!;
+            string versionFolderName = Path.GetFileName(versionPath); // ex) v1.0.1
+            string backupTargetPath = Path.Combine(programRootPath, "백업폴더", versionFolderName, "Config");
+
+            Directory.CreateDirectory(backupTargetPath);
+
+            // 기존 Config 폴더 전체를 복사
+            foreach (string file in Directory.GetFiles(configSourceFolder, "*.*", SearchOption.AllDirectories))
+            {
+                string relativePath = Path.GetRelativePath(configSourceFolder, file);
+                string targetPath = Path.Combine(backupTargetPath, relativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+                File.Copy(file, targetPath, overwrite: true);
+            }
+
+            MessageBox.Show("옵션 폴더 백업이 완료되었습니다.");
+        }
 
 
         public UserOption LoadBackupOption(string SelectedBackupOption)
@@ -338,8 +367,8 @@ namespace MCC_Launcher.Services
 
 
         public void SaveUpdatedUserOption(string outputPath, string programName, string targetVersion, Dictionary<string, string> updatedValues)
-        //호환성 변경된 내용 xml쓰기 
-        {
+
+        {//호환성 변경된 내용 xml쓰기
             var root = new XElement("Option");
             outputPath = Path.Combine(outputPath, "ProgramSettings.xml");
 
@@ -347,7 +376,7 @@ namespace MCC_Launcher.Services
             root.Add(new XElement("program", programName));
             root.Add(new XElement("version", targetVersion));
 
-            // ⬇️ 현재 시간 기록
+            //  현재 시간 기록
             root.Add(new XElement("date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
 
             // 옵션 값들 추가
@@ -440,7 +469,7 @@ namespace MCC_Launcher.Services
                 using (FileStream sourceStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
                 using (FileStream destinationStream = new FileStream(destFile, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    await Task.Delay(1000);
+                    //await Task.Delay(1000);
                     // 다운로드할 때 프로그래스바 눈으로 확인하기 
                     try
                     {
@@ -494,7 +523,7 @@ namespace MCC_Launcher.Services
                 //version.PatchNote
                 //var PatchNotes = new ObservableCollection<string>();
                 version.PatchNote = metaData.PatchNote; // 
-
+                version.MainExecutable = metaData.MainExecutable;
                 version.PatchNotes.Add(metaData.PatchNote);
                 //패치노트가 patch notes
                 return version;
@@ -569,7 +598,7 @@ namespace MCC_Launcher.Services
         }
 
         public List<SoftwareVersion> LoadCompAbilityList(string SelectedProgramPath) //dz 
-        // 읽기 
+        // 옵션스키마읽기 
         {
             string Softwareversions = "SoftwareVersions.xml";
             string SoftwareversionsPath = Path.Combine(SelectedProgramPath, Softwareversions);
@@ -617,142 +646,153 @@ namespace MCC_Launcher.Services
 
         }
 
-        public List<OptionProperty> LoadUserOption2(string installedPath)// dz
-        {
-            var path = Path.Combine(installedPath, "GPIOOption.xml");
-            //string optionfile = "ProgramSettings.xml";
-            List<OptionProperty> optionProperty = new List<OptionProperty>();
-            var userdoc = XDocument.Load(path);
-            var userRoot = userdoc.Root;
-            Dictionary<string, List<OptionProperty>> a  = new Dictionary<string, List<OptionProperty>>();
-            //<optionpropety이름,List<OptionProperty> >
+        public Dictionary<string, List<OptionProperty>> LoadUserOptionsGrouped(string xmlPath)
+        {// 사용자 옵션 읽기 
 
-            foreach (var property in userRoot.Elements())
+            var result = new Dictionary<string, List<OptionProperty>>();
+            if (!File.Exists(xmlPath))
             {
-                var option = new OptionProperty
-                {
-                    Name = property.Name.LocalName,
-                    TypeOrValue = property.Value,
-                    refName = property.Attribute("refName")?.Value// 사용자 옵션 파일에는 없음 
-                };
-                optionProperty.Add(option);
-            }
-            return optionProperty;
-        }
-
-
-        public Dictionary<string, string> ConvertOptions(List<OptionProperty> CurrnetOption, List<SoftwareVersion> softwareVersions, string TargetVersion)
-        {
-            //  
-            Dictionary<string, string> result = new Dictionary<string, string>();
-            Dictionary<string, List<OptionProperty>> a = new Dictionary<string, List<OptionProperty>>();
-           // 옵션카테고리 구분해서 넣을 수 있게 
-            foreach (var softwareVersion in softwareVersions)
-            {
-                var targetVersionInfo = softwareVersions
-                  .FirstOrDefault(v => v.Version == TargetVersion);
-
-                foreach (var category in targetVersionInfo.OptionCategories)
-                {
-                    foreach (var targetProp in category.OptionProperties)
-                    {
-                        string sourceName = targetProp.refName ?? targetProp.Name;
-
-                        var userValue = CurrnetOption
-                            .FirstOrDefault(p => p.Name == sourceName)?.TypeOrValue;
-
-                        if (userValue != null)
-                            result[targetProp.Name] = userValue;
-                        //키 밸류 넣기 
-                        else
-                            result[targetProp.Name] = targetProp.TypeOrValue;
-
-                    }
-                }
-
-
-            }
-
-
-            return result;
-        }
-
-
-
-        public void SaveUserOptionFile(string filePath, string categoryName, Dictionary<string, string> options)
-        {
-            var root = new XElement(categoryName);
-            foreach (var kvp in options)
-            {
-                root.Add(new XElement(kvp.Key, kvp.Value));
-            }
-
-            var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), root);
-            doc.Save(filePath);
-        }
-
-        private static string GetDefaultValue(string type)
-        {
-            return type switch
-            {
-                "int" => "0",
-                "long" => "0",
-                "string" => string.Empty,
-                _ => string.Empty
-            };
-        }
-
-        public Dictionary<string, string> LoadUserOptionFile(string filePath)
-        {
-            var result = new Dictionary<string, string>();
-            if (!File.Exists(filePath))
+                //옵션파일 
                 return result;
-            var doc = XDocument.Load(filePath);
-            var root = doc.Root;
-            if (root == null) return result;
+            }
+            var doc = XDocument.Load(xmlPath);
+            var softwareVersionElem = doc.Element("SoftwareVersion");
 
-            foreach (var element in root.Elements())
+            if (softwareVersionElem == null)
+                throw new Exception("루트 요소 <SoftwareVersion>이 없습니다.");
+
+            foreach (var categoryElem in softwareVersionElem.Elements())
             {
-                result[element.Name.LocalName] = element.Value.Trim();
+                string categoryName = categoryElem.Name.LocalName;
+
+                var properties = categoryElem.Elements()
+                    .Select(p => new OptionProperty
+                    {
+                        Name = p.Name.LocalName,
+                        TypeOrValue = p.Value,
+                        refName = p.Attribute("refName")?.Value
+                    }).ToList();
+
+                result[categoryName] = properties;
+            }
+
+            return result;
+        }
+        public Dictionary<string, List<OptionProperty>> LoadGroupedUserOptionsBySchema(
+    string programFolderPath,
+    string versionName)
+            //사용자옵션파일 호환 
+        {
+            var compatibilityList = LoadCompAbilityList(programFolderPath);
+            var versionSchema = compatibilityList.FirstOrDefault(v => v.Version == versionName);
+            if (versionSchema == null)
+                throw new Exception($"버전 {versionName}에 대한 스키마 정보를 찾을 수 없습니다.");
+
+            // 설치 경로 가져오기 (예: C:\Programs\ProgramA\v1.0.1)
+            string installedPath = GetInstalledversionPath(programFolderPath, versionName);
+
+            var result = new Dictionary<string, List<OptionProperty>>();
+
+            foreach (var category in versionSchema.OptionCategories)
+            {
+                // 스키마에서 지정한 옵션 파일 경로 조합
+                string fullPath = Path.Combine(installedPath, category.FilePath);
+
+                // 그룹별 옵션 로드
+                var group = LoadUserOptionsGrouped(fullPath);
+
+                // Dictionary에 추가 (카테고리 이름 기준)
+                if (group.TryGetValue(category.CategoryName, out var optionList))
+                {
+                    result[category.CategoryName] = optionList;
+                }
             }
 
             return result;
         }
 
-        public UserOption LoadUserOption(string installedPath)
-        //사용자 옵션읽기 
+        //이거이거
+        public Dictionary<OptionCategory, Dictionary<string, string>> ConvertOptionsGroupedByCategory(
+                 Dictionary<string, List<OptionProperty>> currentOptions,
+                 List<SoftwareVersion> softwareVersions,
+                 string targetVersion)
+            //호환 
         {
-            string optionfile = "ProgramSettings.xml";
-            string userConfigPath = Path.Combine(installedPath, optionfile);
-            var userdoc = XDocument.Load(userConfigPath);
-            var userRoot = userdoc.Root;
+            var result = new Dictionary<OptionCategory, Dictionary<string, string>>();
 
-            var user = new UserOption
+            var targetVersionInfo = softwareVersions.FirstOrDefault(v => v.Version == targetVersion);
+            if (targetVersionInfo == null)
+                throw new Exception($"타겟 버전 {targetVersion}을 찾을 수 없습니다.");
+
+            foreach (var category in targetVersionInfo.OptionCategories)
             {
-                Program = userRoot.Element("program")?.Value,
-                CurrentVersion = userRoot.Element("version")?.Value
-            };
+                var categoryName = category.CategoryName;
+                var targetProps = category.OptionProperties;
+                var outputValues = new Dictionary<string, string>();
 
-            // 나머지 엘리먼트 처리
-            foreach (var elem in userRoot.Elements())
-            {
-                if (elem.Name == "program" || elem.Name == "version")
-                    continue;
+                currentOptions.TryGetValue(categoryName, out var userOptions);
+                userOptions ??= new List<OptionProperty>();
 
-                if (elem.Name == "date")
+                foreach (var targetProp in targetProps)
                 {
-                    if (DateTime.TryParse(elem.Value, out var parsedDate))
-                    {
-                        user.LastModified = parsedDate;
-                    }
-                    continue;
+                    string sourceKey = targetProp.refName ?? targetProp.Name;
+                    string userValue = userOptions.FirstOrDefault(p => p.Name == sourceKey)?.TypeOrValue;
+
+                    outputValues[targetProp.Name] = userValue ?? targetProp.TypeOrValue;
                 }
 
-                user.CurrentValues[elem.Name.LocalName] = elem.Value;
+                result[category] = outputValues;
             }
 
-            return user;
+            return result;
         }
+        //호환 맞추고  저장 
+        public void SaveMigratedOptionsGrouped(
+            Dictionary<OptionCategory, Dictionary<string, string>> groupedOptions,
+            string outputFolder,
+            string programCode,
+            string targetVersion)
+        {
+            foreach (var kvp in groupedOptions)
+            {
+                var category = kvp.Key;
+                var settings = kvp.Value;
+
+                var softwareVersionElement = new XElement("SoftwareVersion");
+                softwareVersionElement.SetAttributeValue("Code", programCode);
+                softwareVersionElement.SetAttributeValue("Version", targetVersion);
+
+                var categoryElement = new XElement(category.CategoryName);
+
+                foreach (var setting in settings)
+                {
+                    categoryElement.Add(new XElement(setting.Key, setting.Value));
+                }
+
+                softwareVersionElement.Add(categoryElement);
+
+                var outputPath = Path.Combine(outputFolder, category.FilePath);
+                var outputDir = Path.GetDirectoryName(outputPath);
+                if (!Directory.Exists(outputDir))
+                    Directory.CreateDirectory(outputDir);
+
+                new XDocument(new XDeclaration("1.0", "utf-8", "yes"), softwareVersionElement)
+                    .Save(outputPath);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
         public Dictionary<string, string> ConvertUserOption(UserOption user, List<OptionDefinition> compatibilityList, string targetVersion)
         {
 
@@ -825,6 +865,45 @@ namespace MCC_Launcher.Services
 
             }
             return shcemalist;
+        }
+        public string ImportOptionFolder(string programFolder, string versionPath)
+        {
+            // 설치된 프로그램 경로
+            string installPath = GetInstalledversionPath(programFolder, versionPath);
+            string version = Path.GetFileName(versionPath);
+
+            // 백업 폴더 경로
+            string programRootPath = Path.GetDirectoryName(installPath);
+            string backupFolder = Path.Combine(programRootPath, "백업폴더");
+
+            // 폴더 선택 다이얼로그
+            using (var folderDialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                folderDialog.SelectedPath = backupFolder;
+                folderDialog.Description = "옵션이 포함된 백업 폴더를 선택하세요.";
+
+                if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    string selectedFolder = folderDialog.SelectedPath;
+
+                    // 사용자가 선택한 폴더 안의 옵션 파일 경로를 구성
+                    //string optionFilePath = Path.Combine(selectedFolder, "");
+                    //if (!File.Exists(optionFilePath))
+                    //{
+                    //    MessageBox.Show("선택한 폴더에 ProgramSettings.xml 파일이 없습니다.");
+                    //    //folderDialog.SelectedPath;
+                    //    return null;
+                    //}
+
+                    // 옵션 불러오기
+                    //UserOption user = LoadBackupOption(optionFilePath);
+                    return folderDialog.SelectedPath;
+                }
+                else
+                {
+                    return null; // 취소
+                }
+            }
         }
     }
 }

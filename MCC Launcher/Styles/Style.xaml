@@ -124,9 +124,9 @@
     <Style x:Key="menuButton"
            TargetType="Button">
         <Setter Property="Width"
-                Value="48" />
+                Value="64" />
         <Setter Property="Height"
-                Value="48" />
+                Value="64" />
         <Setter Property="HorizontalAlignment"
                 Value="Left" />
         <Setter Property="Background"

@@ -4,14 +4,15 @@
                  xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
                  xmlns:Views="clr-namespace:MCC_Launcher.Views"
                  Title="MainWindow"
-                 Height="520"
-                 Width="880"
+                 Height="540"
+                 Width="960"
                  ResizeMode="CanMinimize"
-                 dx:HeaderBackground="#15171E"
+                 dx:HeaderBackground="	#FF151515"
+                
                  Padding="0">
     <Grid>
-        
+
         <Views:MainView />
-     
+
     </Grid>
 </dx:ThemedWindow>

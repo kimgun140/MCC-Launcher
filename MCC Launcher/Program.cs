@@ -67,6 +67,7 @@ namespace MCC_Launcher
         public ObservableCollection<string> PatchNotes { get; set; }
 
         public bool isInstalled { get; set; }
+        public string MainExecutable { get; set; }
 
     }
     // 버전별 데이터 
@@ -78,6 +79,9 @@ namespace MCC_Launcher
 
         [XmlElement("PatchNote")]
         public string PatchNote { get; set; }
+
+        [XmlElement("MainExecutable")]
+        public string MainExecutable { get; set; }
 
         public bool isInstalled { get; set; }
     }

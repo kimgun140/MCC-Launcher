@@ -8,8 +8,14 @@ using System.Windows.Input;
 using System.Windows.Documents;
 using System.Collections.Generic;
 using System.IO;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+
 using System.Drawing;
+using Microsoft.Win32;
+using Microsoft.Xaml.Behaviors;
+using DevExpress.Mvvm.UI;
+using System.Windows.Threading;
+using System.Threading.Tasks;
+using System.Windows.Controls;
 
 //using System.Windows.Forms;
 
@@ -21,7 +27,23 @@ namespace MCC_Launcher.ViewModels
         public ObservableCollection<Program> Programs { get; set; } = new ObservableCollection<Program>();
 
 
+        protected IDispatcherService DispatcherService { get { return this.GetService<IDispatcherService>(); } }
 
+        public void SomeMethod()
+        {
+            DispatcherService?.BeginInvoke(() =>
+            {
+                ShouldResetScroll = true;
+                //RaisePropertiesChanged(nameof(ShouldResetScroll));
+
+
+            });
+        }
+        public bool ShouldResetScroll
+        {
+            get => GetValue<bool>();
+            set => SetValue(value);
+        }
 
         public string SelectedOption
         // 선택된 옵션 이름 보여주기 
@@ -46,6 +68,7 @@ namespace MCC_Launcher.ViewModels
             get => GetValue<Program>();
 
             set => SetValue(value);
+
         }
         public string PatchNote
         {
@@ -64,8 +87,8 @@ namespace MCC_Launcher.ViewModels
                 //RaisePropertiesChanged(nameof(SelectedVersion));
                 RaisePropertiesChanged(nameof(PatchNote));
                 //변경된거 수동으로 알리기
-                PatchNotes = null;
-                RaisePropertiesChanged(nameof(PatchNotes));
+                //PatchNotes = null;//전체 목록 
+                //RaisePropertiesChanged(nameof(PatchNotes));
             }
 
         }
@@ -86,11 +109,9 @@ namespace MCC_Launcher.ViewModels
             get => GetValue<ObservableCollection<string>>();
             set => SetValue(value);
         }
-        //public bool IsInstalled
-        //{
-        //    get => GetValue<bool>();
-        //    set => SetValue(value);
-        //}
+
+
+
         IMessageBoxService MessageBoxService { get { return GetService<IMessageBoxService>(); } }
 
 
@@ -136,7 +157,13 @@ namespace MCC_Launcher.ViewModels
             PatchNote = null;
             RaisePropertiesChanged(nameof(PatchNote));
             AllPatchNotes();
+            Messenger.Default.Send("ScrollToTop", "ScrollToTop");
+            //DispatcherService?.BeginInvoke(() =>
+            //{
+            //    ShouldResetScroll = true;
+            //});
 
+            //SomeMethod();
         }
 
         private async void LaunchSelectedVersion()
@@ -168,7 +195,7 @@ namespace MCC_Launcher.ViewModels
                     fileCopyManager.SaveLastUsedVersion(FolderPath, versionname);
 
                     //실행 
-                    fileCopyManager.RunProgram(SelectedProgram.FolderPath, SelectedVersion.Path);
+                    fileCopyManager.RunProgram(SelectedProgram.FolderPath, SelectedVersion.Path, SelectedVersion.MainExecutable);
 
 
                     return;
@@ -310,33 +337,14 @@ namespace MCC_Launcher.ViewModels
 
             if (result == MessageBoxResult.Yes)
             {
+                //fileCopyManager.OptionFolderBackup(SelectedProgram.FolderPath, SelectedVersion.Path);
                 fileCopyManager.OptionExport(SelectedProgram.FolderPath, SelectedVersion.Path);
+
 
             }
 
 
         }
-
-
-
-        //private void howan()
-        //{
-        //    string installPath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
-        //    // 사용자 옵션 파일 위치 폴더 
-        //    List<OptionDefinition> OptionDefinition = new List<OptionDefinition>();
-        //    OptionDefinition = fileCopyManager.LoadCompatibility(SelectedProgram.FolderPath, SelectedVersion.Path);
-        //    //호환성 리스트 파일 
-        //    UserOption userOptions = new UserOption();
-        //    userOptions = fileCopyManager.LoadUserOption(installPath);
-        //    var result = new Dictionary<string, string>();
-        //    string fileversionname = Path.GetFileName(SelectedVersion.Path);
-        //    result = fileCopyManager.ConvertUserOption(userOptions, OptionDefinition, fileversionname);
-        //    // 버전 
-        //    fileCopyManager.SaveUpdatedUserOption(installPath, SelectedProgram.ProgramName, fileversionname, result);
-        //    //세이브 되는 경로만 다른 버전으로 바꿔주면 해당버전으로 마이그레이션된 옵션파일 생성됨 
-
-        //    // 어떤 버전으로 할건지 선택만 하게 하면된다. 
-        //}
 
         private void OptionImport()
         {//호환성체크 
@@ -362,7 +370,7 @@ namespace MCC_Launcher.ViewModels
                     "선택한 옵션을 적용하시겠습니까?\n기존 옵션에 덮어쓰기 됩니다.",
                     "옵션 마이그레이션",
                     MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                    MessageBoxImage.Warning);
 
                 if (result == MessageBoxResult.Yes)
                 {
@@ -381,30 +389,64 @@ namespace MCC_Launcher.ViewModels
                     "선택한 버전과 동일한 버전의 옵션파일입니다. 덮어쓰기 하겠습니까?",
                     "옵션 덮어쓰기",
                     MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
+                    MessageBoxImage.Question);
 
                 if (result == MessageBoxResult.Yes)
                 {
                     var defs = fileCopyManager.LoadCompatibility(SelectedProgram.FolderPath, SelectedVersion.Path);
                     var newOption = fileCopyManager.ConvertUserOption(backupOption, defs, fileversionname);
                     fileCopyManager.SaveUpdatedUserOption(installPath, SelectedProgram.ProgramName, fileversionname, newOption);
+                    // 버전폴더안에 위치 
                 }
             }
         }
 
+
+
         private void LoadVersions()
-        {
+        {//software version 불러오기
 
-            var reuslt = fileCopyManager.LoadCompAbilityList(SelectedProgram.FolderPath);
-            var path = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
-            var CurrentOption = fileCopyManager.LoadUserOption2(path);
+            // 1. 백업 폴더 선택 (폴더 선택 대화상자)
+            string selectedBackupFolder = fileCopyManager.ImportOptionFolder(SelectedProgram.FolderPath, SelectedVersion.Path);
+            if (string.IsNullOrEmpty(selectedBackupFolder))
+                return;
 
-            var versionpath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
-            var TargetVersion = Path.GetFileName(versionpath);
-            // 현재는 선택된 버전이지만 들어가있는 파일이 다른버전이라서 가능하기는 함 바뀌는것만 확인 나중에 파일 다시 쓰기 
+            // 2. 백업 옵션 불러오기 (폴더 기준으로 옵션 여러 파일을 읽음)
+            var groupedOptions = fileCopyManager.LoadUserOptionsGrouped(selectedBackupFolder);
 
-            fileCopyManager.ConvertOptions(CurrentOption, reuslt, TargetVersion);
+            // 3. 현재 설치된 프로그램 경로 및 정보
+            string installedPath = fileCopyManager.GetInstalledProgramFolderPath(SelectedProgram.FolderPath);
+            string targetVersion = Path.GetFileName(SelectedVersion.Path);
+            string programCode = Path.GetFileName(SelectedProgram.FolderPath);
+            string installVersionPath = fileCopyManager.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
+
+            // 4. 호환성 스키마 불러오기
+            var compatibilityList = fileCopyManager.LoadCompAbilityList(SelectedProgram.FolderPath);
+
+            // 5. 사용자에게 마이그레이션 여부 확인
+            var result = MessageBoxService.Show(
+                "선택한 백업 옵션을 현재 버전에 적용하시겠습니까?\n기존 옵션이 덮어쓰기 됩니다.",
+                "옵션 마이그레이션",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            // 6. 마이그레이션 처리
+            var migratedOptions = fileCopyManager.ConvertOptionsGroupedByCategory(
+                groupedOptions, compatibilityList, targetVersion);
+
+            // 7. 마이그레이션된 옵션 저장
+            fileCopyManager.SaveMigratedOptionsGrouped(
+                migratedOptions, installVersionPath, programCode, targetVersion);
+
+            // 8. 완료 메시지
+            MessageBoxService.Show("옵션 마이그레이션 및 저장이 완료되었습니다.");
+
         }
+
+
     }
 }
 

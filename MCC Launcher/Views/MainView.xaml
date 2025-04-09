@@ -2,13 +2,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
              xmlns:ViewModels="clr-namespace:MCC_Launcher.ViewModels"
              xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
              x:Class="MCC_Launcher.Views.MainView"
              mc:Ignorable="d"
              d:DesignHeight="520"
              d:DesignWidth="830"
+             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:local="clr-namespace:MCC_Launcher.Views"
+             xmlns:util="clr-namespace:MCC_Launcher.Utilies"
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core">
 
     <UserControl.Resources>
@@ -22,18 +25,20 @@
     </UserControl.DataContext>
 
     <dxmvvm:Interaction.Behaviors>
+        <dxmvvm:DispatcherService  DispatcherPriority="Normal" />
         <dx:DXMessageBoxService />
     </dxmvvm:Interaction.Behaviors>
 
     <Grid>
+
         <Border>
             <Border.Background>
                 <ImageBrush ImageSource="/Images/background.png" />
             </Border.Background>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="*" />
+                    <!--<ColumnDefinition Width="3*" />-->
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="80" />
@@ -42,18 +47,17 @@
 
                 <Grid Grid.Column="0"
                       Grid.Row="0"
-                      Background="Transparent"
                       HorizontalAlignment="Stretch"
-                      Margin="0">
+                      Margin="0"
+                      Width="auto">
                     <Border>
                         <DockPanel VerticalAlignment="Top"
                                    HorizontalAlignment="Stretch"
                                    Width="auto"
-                                   Background="#3F3F3F">
+                                   Background="#80151515">
                             <ScrollViewer VerticalScrollBarVisibility="Disabled"
                                           HorizontalScrollBarVisibility="Hidden">
-                                <ItemsControl ItemsSource="{Binding Programs}"
-                                              Background="#151515">
+                                <ItemsControl ItemsSource="{Binding Programs}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <StackPanel Orientation="Horizontal" />
@@ -63,17 +67,43 @@
                                         <DataTemplate>
                                             <Button Style="{StaticResource menuButton}"
                                                     Command="{Binding DataContext.SelectedProgramCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}">
-                                                <StackPanel Orientation="Vertical">
-                                                    <Image Source="{Binding IconSource}" />
+                                                    CommandParameter="{Binding}"
+                                                    Padding="0">
+                                                <StackPanel Orientation="Horizontal">
+
+                                                    <Image Source="{Binding IconSource}"
+                                                           RenderOptions.BitmapScalingMode="Fant"
+                                                           Stretch="Uniform" />
                                                     <TextBlock Text="{Binding ProgramName}"
                                                                FontSize="12" />
+
                                                 </StackPanel>
                                             </Button>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </ScrollViewer>
+
+                            <Button x:Name="UserButton"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Height="64"
+                                    Width="64"
+                                    HorizontalAlignment="Right"
+                                    Style="{StaticResource menuButton}"
+                                    Margin="0 10 10 0">
+                                <Grid>
+                                    <Ellipse Fill="#222" />
+                                    <Image Source="/icons/ChatGPT Image 2025년 4월 8일 오전 11_28_06.png"
+                                           Stretch="UniformToFill"
+                                           HorizontalAlignment="Stretch"
+                                           VerticalAlignment="Stretch"
+                                           RenderOptions.BitmapScalingMode="Fant">
+
+                                    </Image>
+                                </Grid>
+                            </Button>
                         </DockPanel>
                     </Border>
                 </Grid>
@@ -83,9 +113,9 @@
                     <DockPanel Grid.Row="1"
                                Grid.Column="0"
                                Background="Transparent"
-                               Width="180"
+                               Width="200"
                                HorizontalAlignment="Left"
-                               Margin="0 0 0 0">
+                               Margin="30 0 0 0">
                         <TextBlock DockPanel.Dock="Top"
                                    Text="{Binding SelectedProgram.ProgramName }"
                                    FontFamily="{StaticResource NotoSans}"
@@ -101,12 +131,13 @@
                                 DockPanel.Dock="Top">
                             <ScrollViewer DockPanel.Dock="Top"
                                           VerticalScrollBarVisibility="Hidden"
-                                          MaxHeight="100">
+                                          MaxHeight="120">
                                 <TextBlock DockPanel.Dock="Top"
                                            Text="{Binding SelectedProgram.Description }"
                                            FontFamily="{StaticResource NotoSans_Regular}"
                                            FontWeight="DemiBold"
                                            TextWrapping="Wrap"
+                                           Height="Auto"
                                            Margin="10 10 0 0"
                                            FontSize="16" />
                             </ScrollViewer>
@@ -202,36 +233,47 @@
                 <DockPanel Grid.Row="1"
                            Grid.Column="1"
                            Margin="0"
-                           Width="auto"
-                           Background="#151515">
-                    <Border BorderBrush="#1F1F1F"
-                            BorderThickness="0.5 0 0 0">
-                        <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                           Width="600"
+                           HorizontalAlignment="Right">
+                    <Border>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Hidden"
                                       CanContentScroll="True"
                                       Height="auto"
-                                      MaxHeight="1240">
-                            <DockPanel>
-                                <TextBlock Grid.Row="1"
-                                           Background="Transparent"
-                                           Foreground="White"
-                                           Text="{Binding PatchNote}"
-                                           FontFamily="pack://application:,,,/Font/NanumGothic.ttf"
-                                           FontWeight="Bold"
-                                           FontSize="16"
-                                           HorizontalAlignment="Stretch"
-                                           Width="auto"
-                                           LineHeight="30"
-                                           DockPanel.Dock="Top" />
+                                      MaxHeight="1240"
+                                      xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+                                      xmlns:util="clr-namespace:MCC_Launcher.Utilies"
+                                      >
+                            <i:Interaction.Behaviors>
+                                <util:ScrollToTopBehavior Trigger="{Binding ShouldResetScroll}" />
+                            </i:Interaction.Behaviors>
 
+                            <Grid>
+                                <ItemsControl ItemsSource="{Binding PatchNote}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Grid.Row="1"
+                                                       Background="Transparent"
+                                                       Foreground="White"
+                                                       Text="{Binding PatchNote}"
+                                                       FontFamily="pack://application:,,,/Font/NanumGothic.ttf"
+                                                       FontWeight="Bold"
+                                                       FontSize="16"
+                                                       HorizontalAlignment="Stretch"
+                                                       Width="auto"
+                                                       LineHeight="30"
+                                                       DockPanel.Dock="Top" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                                 <ItemsControl ItemsSource="{Binding PatchNotes}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Width="500"
+
+                                            <Border Width="600"
                                                     Height="200"
                                                     Background="#10FFFFFF"
-                                                    Opacity="0.8"
-                                                    Margin="10">
+                                                    Margin="0 0 0 10">
                                                 <Border.Clip>
                                                     <RectangleGeometry RadiusX="10"
                                                                        RadiusY="10"
@@ -249,7 +291,7 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                            </DockPanel>
+                            </Grid>
                         </ScrollViewer>
                     </Border>
                 </DockPanel>
