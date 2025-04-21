@@ -12,6 +12,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Config\**" />
+    <EmbeddedResource Remove="Config\**" />
+    <None Remove="Config\**" />
+    <Page Remove="Config\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Font\AritaDotumKR-Light.ttf" />
     <None Remove="Font\Montserrat-VariableFont_wght.ttf" />
     <None Remove="Font\NotoSansKR-Regular.ttf" />
@@ -21,7 +28,6 @@
     <None Remove="icons\ChatGPT Image 2025년 4월 8일 오전 11_28_06.png" />
     <None Remove="Images\2025년 4월 1일 오후 05_30_11.png" />
     <None Remove="Images\2025년 4월 1일 오후 05_30_15.png" />
-    <None Remove="Images\background.png" />
     <None Remove="Images\ChatGPT Image 2025년 4월 1일 오후 04_51_16.png" />
     <None Remove="Images\ChatGPT Image 2025년 4월 1일 오후 05_34_43.png" />
     <None Remove="Images\icons8-settings-50.png" />
@@ -86,8 +92,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Images\background.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Resource Include="Images\backgroundimage.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\ChatGPT Image 2025년 4월 1일 오후 05_34_43.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -103,7 +109,16 @@
     <PackageReference Include="DevExpress.Wpf.Themes.All" Version="22.2.4">
       <GeneratePathProperty>True</GeneratePathProperty>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.20" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.20">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.8.0" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+    <PackageReference Include="Npgsql" Version="7.0.7" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.18" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
     
   </ItemGroup>
 
@@ -114,11 +129,6 @@
     <Resource Include="Images\icons8-settings-50.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Config\" />
-    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

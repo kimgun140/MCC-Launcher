@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DevExpress.Mvvm;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -46,6 +47,7 @@ namespace MCC_Launcher
                 return null;
             }
         }
+        public int ProgramCode { get; set; } // 프로그램 코드
         //public string Description { get; set; } // 프로그램 설명
 
     }
@@ -66,8 +68,10 @@ namespace MCC_Launcher
 
         public ObservableCollection<string> PatchNotes { get; set; }
 
-        public bool isInstalled { get; set; }
-        public string MainExecutable { get; set; }
+        public bool isInstalled { get; set; }//사용안함
+        public string MainExecutable { get; set; }//사용 안함
+        public bool AllowAnonymousRun { get; set; } //
+        public bool AllowAnonymousInstall { get; set; } //
 
     }
     // 버전별 데이터 
@@ -139,4 +143,36 @@ namespace MCC_Launcher
         public string refName { get; set; }
     }
 
+    public enum UserEditMode
+    {
+        추가,
+        변경,
+        삭제
+    }
+    public class UserViewModel
+    {// ui바인딩용 
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        public string RoleName { get; set; } // 이걸 UI에 바인딩
+        public bool Activated { get; set; } // 이걸 UI에 바인딩
+
+        public int RoleId { get; set; }
+
+        //public string Mode { get; set; }
+    }
+    public class PermissionViewModel : ViewModelBase
+    {
+        public int PermissionId { get; set; }
+        public string Name
+        {
+            get => GetValue<string>();
+            set => SetValue(value);
+        }
+        public bool IsSelected
+        {
+
+            get => GetValue<bool>();
+            set => SetValue(value);
+        }
+    }
 }

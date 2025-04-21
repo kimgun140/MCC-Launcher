@@ -1,7 +1,12 @@
-﻿using Microsoft.Win32;
+﻿using DevExpress.Xpf.Core;
+using MCC_Launcher.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic.ApplicationServices;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,7 +16,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using static MCC_Launcher.ViewModels.UserManagementViewModel;
 using static System.Windows.Forms.Design.AxImporter;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace MCC_Launcher.Services
 {
@@ -156,7 +163,7 @@ namespace MCC_Launcher.Services
                     //여기서 설치되었느지 검사해서 넣기 
 
                     version.PatchNote = metaData.PatchNote; // 
-                                                   version.MainExecutable = metaData.MainExecutable;
+                    version.MainExecutable = metaData.MainExecutable;
 
                     //version.isInstalled = metaData.isInstalled;
 
@@ -219,13 +226,13 @@ namespace MCC_Launcher.Services
         }
 
         public void RunProgram(string programFolder, string versionPath, string ExeFile)
-            // 프로그램 이름을 전달해야겠네 
+        // 프로그램 이름을 전달해야겠네 
         {
-          
+
             // xml에서 읽어오거나 정해놓거나 
             string installPath = GetInstalledversionPath(programFolder, versionPath);
             programFolder = Path.GetFileName(programFolder);
-            installPath = Path.Combine(installPath, programFolder);
+            //installPath = Path.Combine(installPath, programFolder);
             string exePath = Path.Combine(installPath, ExeFile);
             if (!File.Exists(exePath))
             {
@@ -298,7 +305,7 @@ namespace MCC_Launcher.Services
         }
 
         public void OptionFolderBackup(string programFolder, string versionPath)
-        {
+        {// softewareversion.xml 읽고, 옵션폴더 백업하기 
             string installVersionPath = GetInstalledversionPath(programFolder, versionPath);
             string configSourceFolder = Path.Combine(installVersionPath, "Config");
 
@@ -478,6 +485,7 @@ namespace MCC_Launcher.Services
 
                         while ((bytesRead = await sourceStream.ReadAsync(bytes, 0, bytes.Length)) > 0)
                         {
+
                             await destinationStream.WriteAsync(bytes, 0, bytesRead);
                         }
 
@@ -681,7 +689,7 @@ namespace MCC_Launcher.Services
         public Dictionary<string, List<OptionProperty>> LoadGroupedUserOptionsBySchema(
     string programFolderPath,
     string versionName)
-            //사용자옵션파일 호환 
+        //사용자옵션파일 호환 
         {
             var compatibilityList = LoadCompAbilityList(programFolderPath);
             var versionSchema = compatibilityList.FirstOrDefault(v => v.Version == versionName);
@@ -716,7 +724,7 @@ namespace MCC_Launcher.Services
                  Dictionary<string, List<OptionProperty>> currentOptions,
                  List<SoftwareVersion> softwareVersions,
                  string targetVersion)
-            //호환 
+        //호환 
         {
             var result = new Dictionary<OptionCategory, Dictionary<string, string>>();
 
@@ -904,6 +912,355 @@ namespace MCC_Launcher.Services
                     return null; // 취소
                 }
             }
+        }
+        public async Task<UserInfo?> Authenticate(string userId, string password)
+        //로그인 사용자 정보 
+        {
+            using (var _context = new LauncherDbContext())
+            {
+                try
+                {
+
+                    //전체 불러오기  include
+                    return await _context.Users
+                        .Include(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
+                        .FirstOrDefaultAsync(u => u.UserId == userId && u.Password == password);
+
+                }
+                catch (Exception ex)
+                {
+                    // 예외 처리 로직 추가
+                    MessageBox.Show($"인증 중 오류 발생: {ex.Message}");
+                    return null;
+                }
+
+            }
+
+        }
+
+        //public void SaveUserInfo(UserInfo user)
+        //{
+        //    var roleName = user.UserRoles
+        //    .Select(ur => ur.Role?.RoleName)
+        //    .FirstOrDefault();
+
+        //    if (roleName == null)
+        //    {
+        //        MessageBox.Show("역할 정보가 없습니다.");
+        //        return;
+        //    }
+
+        //    if (roleName == "Admin")
+        //    {
+        //        MessageBox.Show("관리자로 로그인되었습니다. 설치 권한이 부여됩니다.");
+        //    }
+        //    else if (roleName == "guest")
+        //    {
+        //        MessageBox.Show("게스트로 로그인되었습니다. 실행만 가능합니다.");
+        //    }
+        //    else
+        //    {
+        //        MessageBox.Show($"알 수 없는 역할: {roleName}");
+        //    }
+
+        //}
+        public void GenerateToken()
+        {
+
+        }
+        public ProgramsEntity? GetProgramByName(string programName)
+        {
+            using (var context = new LauncherDbContext())
+            {
+                return context.Programs
+                    .FirstOrDefault(p => p.Name == programName);
+            }
+        }
+        public void anonymous(int selectedProgramCode, VersionInfo selectedVersion)
+        {
+            using (var context = new LauncherDbContext())
+            {
+                var program = context.Programs
+                    .FirstOrDefault(p => p.ProgramCode == selectedProgramCode);
+
+                if (program != null)
+                {
+                    //  값을 VersionInfo에 반영
+                    selectedVersion.AllowAnonymousRun = program.AllowAnonymousRun;
+                    selectedVersion.AllowAnonymousInstall = program.AllowAnonymousInstall;
+                }
+            }
+        }
+        public bool SaveUser(UserViewModel viewModel)
+        {
+
+            if (string.IsNullOrWhiteSpace(viewModel.UserId) || string.IsNullOrWhiteSpace(viewModel.UserName))
+            {
+                MessageBox.Show("아이디와 이름은 필수입니다.");
+                //종료할때 무조건 떠버리네 
+                return false;
+            }
+            try
+            {
+                var userEntity = ToUserInfo(viewModel);// 변환 
+
+                using var context = new LauncherDbContext();
+                var existingUser = context.Users
+                    .Include(u => u.UserRoles)
+                    .FirstOrDefault(u => u.UserId == userEntity.UserId);
+
+                if (existingUser != null)
+                {
+                    // 기존 사용자 업데이트
+                    existingUser.Name = userEntity.Name;
+                    existingUser.Activated = userEntity.Activated;
+
+
+                    existingUser.UserRoles.Clear();
+                    foreach (var role in userEntity.UserRoles.ToList())
+                    {
+                        existingUser.UserRoles.Add(role);
+                    }
+                }
+
+                else
+                {
+
+                    // 신규 사용자 등록
+                    context.Users.Add(userEntity);
+                    // 입력안하면 null이라서 에러
+                }
+
+                context.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"사용자 저장 중 오류 발생: {ex.Message}");
+                return false;
+            }
+        }
+        public UserInfo ToUserInfo(UserViewModel viewModel)
+        // UserViewModel을 UserInfo로 변환하는 메서드
+        {
+            return new UserInfo
+            {
+                UserId = viewModel.UserId,
+                Name = viewModel.UserName,
+                Activated = viewModel.Activated,
+                UserRoles = new List<UserRole>
+            {
+                new UserRole
+                {
+                    RoleId = viewModel.RoleId
+                }
+            }
+            };
+        }
+
+        public bool UserDelete(UserViewModel EditedUser)
+        {
+            //if (string.IsNullOrWhiteSpace(EditedUser.UserId) || string.IsNullOrWhiteSpace(EditedUser.UserName))
+            //{
+            //    MessageBox.Show("아이디와 이름은 필수입니다.");
+            //    //종료할때 무조건 떠버리네 
+            //    return false;
+            //}
+
+            using var context = new LauncherDbContext();
+            try
+            {
+                var user = context.Users
+                    .Include(u => u.UserRoles)
+                    .FirstOrDefault(u => u.UserId == EditedUser.UserId);
+                if (user != null)
+                {
+                    context.Users.Remove(user);
+                    context.SaveChanges();
+                    return true;
+                }
+                else
+                {
+                    return false; // 사용자가 존재하지 않음
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+
+            }
+        }
+        public ObservableCollection<Role>LoadRoles()
+        {
+            using (var context = new LauncherDbContext())
+            {
+                var roles = context.Roles.ToList();
+  
+                if (roles == null || roles.Count == 0)
+                {
+                    return new ObservableCollection<Role>();
+                }
+                return new ObservableCollection<Role>(roles);
+            }
+
+                //return new ObservableCollection<Role>
+       
+        }
+
+        public ObservableCollection<ProgramsEntity> LoadProgramsEntities()
+        {
+            using (var context = new LauncherDbContext())
+            {
+                var programs = context.Programs.ToList();
+                return new ObservableCollection<ProgramsEntity>(programs);
+            }
+        }
+
+        public void SavePermissionChanges( ProgramsEntity selectedProgram, Role selectedRole, ObservableCollection<PermissionViewModel> availablePermissions)
+        {
+            // 기존 권한 삭제 하고 권한 재부여 형식 
+            using var context = new LauncherDbContext();
+
+            var existingPermissions = context.RoleProgramPermissions
+       .Where(rpp => rpp.RoleId == selectedRole.RoleId && rpp.ProgramCode == selectedProgram.ProgramCode)
+       .ToList();
+
+            context.RoleProgramPermissions.RemoveRange(existingPermissions);
+
+            // 새로운 권한 추가
+            foreach (var permission in availablePermissions.Where(p => p.IsSelected))
+            {
+                context.RoleProgramPermissions.Add(new RoleProgramPermission
+                {
+                    RoleId = selectedRole.RoleId,
+                    ProgramCode = selectedProgram.ProgramCode,
+                    PermissionId = permission.PermissionId
+                });
+            }
+
+            context.SaveChanges();
+        }
+
+        public ObservableCollection<PermissionViewModel> LoadPermissions()
+        {
+            //런처에 대한 전역적 권한 관리 설치, 실행... 추가적으로 생기겠지 부여 True/False로 
+            using var context = new LauncherDbContext();
+            var permissions = context.Permissions.ToList(); // DB에서 모든 권한 불러오기
+            ObservableCollection<PermissionViewModel> AvailablePermissions = new ObservableCollection<PermissionViewModel>();
+            //AvailablePermissions.Clear(); // 기존 목록 초기화
+
+            foreach (var p in permissions)
+            {
+                AvailablePermissions.Add(new PermissionViewModel
+                {
+                    PermissionId = p.PermissionID,
+                    Name = p.PermissionName,
+                    IsSelected = false // 처음엔 아무 권한도 선택되지 않음
+                });
+            }
+            return AvailablePermissions;
+        }
+
+        public ObservableCollection<PermissionViewModel> LoadAssignedPermissions(int roleId, int programCode)
+        {
+            using var context = new LauncherDbContext();
+
+            // 전체 권한 목록 불러오기
+            var allPermissions = context.Permissions.ToList();
+
+            // 해당 역할 + 프로그램의 권한 목록 불러오기
+            var assignedPermissionIds = context.RoleProgramPermissions
+                .Where(rpp => rpp.RoleId == roleId && rpp.ProgramCode == programCode)
+                .Select(rpp => rpp.PermissionId)
+                .ToList();
+
+            // 뷰모델로 변환하면서 선택 상태 반영
+            var permissionViewModels = new ObservableCollection<PermissionViewModel>(
+                allPermissions.Select(p => new PermissionViewModel
+                {
+                    PermissionId = p.PermissionID,
+                    Name = p.PermissionName,
+                    IsSelected = assignedPermissionIds.Contains(p.PermissionID)
+                }));
+
+            return permissionViewModels;
+        }
+        public bool SaveRole(Role role)
+        {
+            // 역할 추가 
+            using var context = new LauncherDbContext();
+
+            var existing = context.Roles.FirstOrDefault(r => r.RoleId == role.RoleId);
+
+            if (existing != null)
+            {
+                existing.RoleName = role.RoleName;
+            }
+            else
+            {
+                context.Roles.Add(role);
+            }
+
+            context.SaveChanges();
+            return true;
+        }
+        public bool DeleteRole(int roleId)
+        {
+            using var context = new LauncherDbContext();
+            var role = context.Roles
+                .Include(r => r.UserRoles)
+                .Include(r => r.RolePermissions)
+                .Include(r => r.RoleProgramPermissions)
+                .FirstOrDefault(r => r.RoleId == roleId);
+
+            if (role == null)
+                return false;
+
+            // 관련된 관계 제거
+            context.UserRoles.RemoveRange(role.UserRoles);
+            context.RolePermissions.RemoveRange(role.RolePermissions);
+            context.RoleProgramPermissions.RemoveRange(role.RoleProgramPermissions);
+
+            context.Roles.Remove(role);
+            context.SaveChanges();
+            return true;
+        }
+        public bool HasPermission(UserInfo user, int programCode, string permissionName)
+        {
+            using var context = new LauncherDbContext();
+
+            // 유저의 모든 RoleId 가져오기
+            var userRoleIds = user.UserRoles.Select(ur => ur.RoleId).ToList();
+
+            // 해당 권한 이름의 PermissionId 찾기
+            var permission = context.Permissions.FirstOrDefault(p => p.PermissionName == permissionName);
+            if (permission == null)
+                return false;
+
+            // RoleProgramPermission에 해당 Role + Program + Permission이 있는지 확인
+            return context.RoleProgramPermissions.Any(rpp =>
+                userRoleIds.Contains(rpp.RoleId) &&
+                rpp.ProgramCode == programCode &&
+                rpp.PermissionId == permission.PermissionID);
+        }
+        public bool AddPermission(string name)
+        {
+            using var context = new LauncherDbContext();
+
+            // 중복 권한 방지
+            bool exists = context.Permissions.Any(p => p.PermissionName == name);
+            if (exists)
+                return false;
+
+            var newPermission = new Permission
+            {
+                PermissionName = name
+            };
+
+            context.Permissions.Add(newPermission);
+            context.SaveChanges();
+            return true;
         }
     }
 }

@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<SoftwareVersion Code="BORA" Version="1.0.1">
-	<GPIOOption>
-		<Property1>HIGH</Property1>
-		<Property2>LOW</Property2>
-	</GPIOOption>
-</SoftwareVersion>

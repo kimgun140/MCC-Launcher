@@ -25,16 +25,29 @@
     </UserControl.DataContext>
 
     <dxmvvm:Interaction.Behaviors>
-        <dxmvvm:DispatcherService  DispatcherPriority="Normal" />
+        <!--<dxmvvm:DispatcherService  DispatcherPriority="Normal" />-->
         <dx:DXMessageBoxService />
+        <dx:DialogService x:Name="RolePermissionManagementDialog"
+                          DialogWindowStartupLocation="CenterOwner"
+                          DialogStyle="{StaticResource RolePermissionManagement }" />
+        <dx:DialogService x:Name="LoginDialog"
+                          DialogWindowStartupLocation="CenterOwner"
+                          DialogStyle="{StaticResource LoginDialogStyle }" /> 
+        <dx:DialogService x:Name="UserManagementDialog"
+                          DialogWindowStartupLocation="CenterOwner"
+                          DialogStyle="{StaticResource UserManagement }" />
+        <dx:DialogService x:Name="RoleManagementDialog"
+                          DialogWindowStartupLocation="CenterOwner"
+                          DialogStyle="{StaticResource RoleManagement }" />
     </dxmvvm:Interaction.Behaviors>
 
     <Grid>
 
         <Border>
-            <Border.Background>
-                <ImageBrush ImageSource="/Images/background.png" />
-            </Border.Background>
+
+            <!--<Border.Background>
+                <ImageBrush ImageSource="/Images/backgroundimage.png" />
+            </Border.Background>-->
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -54,7 +67,7 @@
                         <DockPanel VerticalAlignment="Top"
                                    HorizontalAlignment="Stretch"
                                    Width="auto"
-                                   Background="#80151515">
+                                   Background="#0D0D0D">
                             <ScrollViewer VerticalScrollBarVisibility="Disabled"
                                           HorizontalScrollBarVisibility="Hidden">
                                 <ItemsControl ItemsSource="{Binding Programs}">
@@ -91,6 +104,7 @@
                                     Height="64"
                                     Width="64"
                                     HorizontalAlignment="Right"
+                                    Command="{Binding ShowLoginCommand}"
                                     Style="{StaticResource menuButton}"
                                     Margin="0 10 10 0">
                                 <Grid>
@@ -102,7 +116,28 @@
                                            RenderOptions.BitmapScalingMode="Fant">
 
                                     </Image>
+                                    <TextBlock Text="{Binding LoggedInUser.UserId}"
+                                               FontSize="12"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Bottom"
+                                               Foreground="White" />
                                 </Grid>
+                                <Button.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="로그인"
+                                                  Command="{Binding ShowLoginCommand}" />
+                                        <MenuItem Header="권한관리"
+                                                  Command="{Binding RolePermissionManagementCommand}"
+                                                  Visibility="{Binding IsAdminUser, Converter={StaticResource boolToVisibilityConverter} }" />
+                                        <MenuItem Header="사용자 관리"
+                                                  Command="{Binding ShowUserManagementCommand}"
+                                                  Visibility="{Binding IsAdminUser, Converter={StaticResource boolToVisibilityConverter} }" />
+                                        <MenuItem Header="전체 관리 "
+                                                  Command="{Binding RoleManagementCommand}" />
+                                        <MenuItem Header="로그아웃"
+                                                  Command="{Binding LogoutCommand}" />
+                                    </ContextMenu>
+                                </Button.ContextMenu>
                             </Button>
                         </DockPanel>
                     </Border>
@@ -112,10 +147,14 @@
                         BorderBrush="Black">
                     <DockPanel Grid.Row="1"
                                Grid.Column="0"
-                               Background="Transparent"
                                Width="200"
-                               HorizontalAlignment="Left"
-                               Margin="30 0 0 0">
+                               HorizontalAlignment="Left">
+                        <DockPanel.Background>
+
+                            <ImageBrush ImageSource="{StaticResource BackgroundImage}"
+                                        Stretch="UniformToFill"
+                                        AlignmentX="Left" />
+                        </DockPanel.Background>
                         <TextBlock DockPanel.Dock="Top"
                                    Text="{Binding SelectedProgram.ProgramName }"
                                    FontFamily="{StaticResource NotoSans}"
@@ -125,7 +164,7 @@
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"
                                    MaxHeight="60"
-                                   Margin="0 30 0 20" />
+                                   Margin="0 20 0 20" />
 
                         <Border Margin="0"
                                 DockPanel.Dock="Top">
@@ -232,7 +271,7 @@
 
                 <DockPanel Grid.Row="1"
                            Grid.Column="1"
-                           Margin="0"
+                           Margin="0 20 0 0 "
                            Width="600"
                            HorizontalAlignment="Right">
                     <Border>
@@ -240,13 +279,7 @@
                                       HorizontalScrollBarVisibility="Hidden"
                                       CanContentScroll="True"
                                       Height="auto"
-                                      MaxHeight="1240"
-                                      xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-                                      xmlns:util="clr-namespace:MCC_Launcher.Utilies"
-                                      >
-                            <i:Interaction.Behaviors>
-                                <util:ScrollToTopBehavior Trigger="{Binding ShouldResetScroll}" />
-                            </i:Interaction.Behaviors>
+                                      MaxHeight="1240">
 
                             <Grid>
                                 <ItemsControl ItemsSource="{Binding PatchNote}">

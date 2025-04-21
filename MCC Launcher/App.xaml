@@ -1,6 +1,9 @@
 ﻿<Application x:Class="MCC_Launcher.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MCC_Launcher.Views"
+             xmlns:ViewModels="clr-namespace:MCC_Launcher.ViewModels"
+             xmlns:Views="clr-namespace:MCC_Launcher.Views"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -9,15 +12,30 @@
             <FontFamily x:Key="NotoSans">application:,,,/Font/#Noto Sans KR SemiBold</FontFamily>
             <FontFamily x:Key="Pretendard">application:,,,/Font/#Pretendard</FontFamily>
             <FontFamily x:Key="NotoSans_Regular">application:,,,/Font/#Noto Sans KR</FontFamily>
+            <BitmapImage x:Key="BackgroundImage"
+                         UriSource="pack://application:,,,/images/backgroundimage.png" />
 
+            <DataTemplate DataType="{x:Type ViewModels:RoleEditDialogViewModel}">
+                <Views:RoleEditDialogView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type ViewModels:RolePermissionManagementViewModel}">
+                <Views:RolePermissionManagementView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type ViewModels:UserManagementViewModel}">
+                <Views:UserManagementView />
+            </DataTemplate>
+
+            <!--<DataTemplate x:Key="LoginViewTemplate">
+                <local:LoginView />
+            </DataTemplate>-->
             <ResourceDictionary.MergedDictionaries>
 
                 <ResourceDictionary Source="/Styles/Style.xaml" />
-                
+
                 <!--<ResourceDictionary Source="pack://application:,,,/DevExpress.Xpf.Themes.Office2019Colorful.v22.2;component/Themes/Office2019Colorful.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DevExpress.Xpf.Core.v22.2;component/Themes/Generic.xaml" />-->
             </ResourceDictionary.MergedDictionaries>
-            
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
