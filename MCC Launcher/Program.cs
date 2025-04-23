@@ -69,7 +69,7 @@ namespace MCC_Launcher
         public ObservableCollection<string> PatchNotes { get; set; }
 
         public bool isInstalled { get; set; }//사용안함
-        public string MainExecutable { get; set; }//사용 안함
+        public string MainExecutable { get; set; }//
         public bool AllowAnonymousRun { get; set; } //
         public bool AllowAnonymousInstall { get; set; } //
 

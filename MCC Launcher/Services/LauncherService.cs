@@ -67,7 +67,7 @@ namespace MCC_Launcher.Services
 
 
 
-        public ObservableCollection<Program> LoadPrograms()
+        public ObservableCollection<Program> LoadProgramLIst()
         {
 
             ObservableCollection<Program> programs = new ObservableCollection<Program>();
@@ -184,6 +184,8 @@ namespace MCC_Launcher.Services
 
         public void Connection()
         {
+        
+
 
             //unc경로, 아이디 , 비밀번호 읽기 
             XmlSerializer launcherSerializer = new XmlSerializer(typeof(LauncherConfig));
@@ -225,7 +227,7 @@ namespace MCC_Launcher.Services
             }
         }
 
-        public void RunProgram(string programFolder, string versionPath, string ExeFile)
+        public void RunProgram(string programFolder, string versionPath, string ExeFile,string token)
         // 프로그램 이름을 전달해야겠네 
         {
 
@@ -246,7 +248,8 @@ namespace MCC_Launcher.Services
                 {
                     FileName = exePath,
                     WorkingDirectory = installPath,
-                    Arguments = " ",
+                    Arguments = $"--jwt=\"{token}\"",
+
                     //ArgumentList = { " ", "" },
                     Verb = "runas",
                     UseShellExecute = true,
@@ -304,35 +307,36 @@ namespace MCC_Launcher.Services
 
         }
 
-        public void OptionFolderBackup(string programFolder, string versionPath)
-        {// softewareversion.xml 읽고, 옵션폴더 백업하기 
-            string installVersionPath = GetInstalledversionPath(programFolder, versionPath);
-            string configSourceFolder = Path.Combine(installVersionPath, "Config");
+        //public void OptionFolderBackup(string programFolder, string versionPath)
+        //    // 사용안함 
+        //{// softewareversion.xml 읽고, 옵션폴더 백업하기 
+        //    string installVersionPath = GetInstalledversionPath(programFolder, versionPath);
+        //    string configSourceFolder = Path.Combine(installVersionPath, "Config");
 
-            if (!Directory.Exists(configSourceFolder))
-            {
-                MessageBox.Show("Config 폴더가 존재하지 않습니다.");
-                return;
-            }
+        //    if (!Directory.Exists(configSourceFolder))
+        //    {
+        //        MessageBox.Show("Config 폴더가 존재하지 않습니다.");
+        //        return;
+        //    }
 
-            // 백업 위치: ProgramA/백업폴더/v1.0.1/Config/
-            string programRootPath = Path.GetDirectoryName(installVersionPath)!;
-            string versionFolderName = Path.GetFileName(versionPath); // ex) v1.0.1
-            string backupTargetPath = Path.Combine(programRootPath, "백업폴더", versionFolderName, "Config");
+        //    // 백업 위치: ProgramA/백업폴더/v1.0.1/Config/
+        //    string programRootPath = Path.GetDirectoryName(installVersionPath)!;
+        //    string versionFolderName = Path.GetFileName(versionPath); // ex) v1.0.1
+        //    string backupTargetPath = Path.Combine(programRootPath, "백업폴더", versionFolderName, "Config");
 
-            Directory.CreateDirectory(backupTargetPath);
+        //    Directory.CreateDirectory(backupTargetPath);
 
-            // 기존 Config 폴더 전체를 복사
-            foreach (string file in Directory.GetFiles(configSourceFolder, "*.*", SearchOption.AllDirectories))
-            {
-                string relativePath = Path.GetRelativePath(configSourceFolder, file);
-                string targetPath = Path.Combine(backupTargetPath, relativePath);
-                Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-                File.Copy(file, targetPath, overwrite: true);
-            }
+        //    // 기존 Config 폴더 전체를 복사
+        //    foreach (string file in Directory.GetFiles(configSourceFolder, "*.*", SearchOption.AllDirectories))
+        //    {
+        //        string relativePath = Path.GetRelativePath(configSourceFolder, file);
+        //        string targetPath = Path.Combine(backupTargetPath, relativePath);
+        //        Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+        //        File.Copy(file, targetPath, overwrite: true);
+        //    }
 
-            MessageBox.Show("옵션 폴더 백업이 완료되었습니다.");
-        }
+        //    MessageBox.Show("옵션 폴더 백업이 완료되었습니다.");
+        //}
 
 
         public UserOption LoadBackupOption(string SelectedBackupOption)
@@ -558,6 +562,7 @@ namespace MCC_Launcher.Services
 
 
         public UserOption? LatestRunVersionRecord(string programFolder, string versionPath)
+            // 가장 최근 버전 확인  
         {
 
             const string file = "ProgramSettings.xml";
@@ -874,8 +879,9 @@ namespace MCC_Launcher.Services
             }
             return shcemalist;
         }
-        public string ImportOptionFolder(string programFolder, string versionPath)
+        public string ImportOptionFolder(string programFolder, string versionPath)//옵션을 선택하게 되어있네 
         {
+            // 백업폴더에 들어있는 옵션을 찾는다. 
             // 설치된 프로그램 경로
             string installPath = GetInstalledversionPath(programFolder, versionPath);
             string version = Path.GetFileName(versionPath);
@@ -971,6 +977,7 @@ namespace MCC_Launcher.Services
         }
         public ProgramsEntity? GetProgramByName(string programName)
         {
+            //디비에서 프로그램 정보 가져오기 
             using (var context = new LauncherDbContext())
             {
                 return context.Programs
@@ -978,7 +985,7 @@ namespace MCC_Launcher.Services
             }
         }
         public void anonymous(int selectedProgramCode, VersionInfo selectedVersion)
-        {
+        {// 익명실행가능한지 정보 디비에서 가져오기 
             using (var context = new LauncherDbContext())
             {
                 var program = context.Programs
@@ -993,7 +1000,7 @@ namespace MCC_Launcher.Services
             }
         }
         public bool SaveUser(UserViewModel viewModel)
-        {
+        {// 생성, 변경된 사용자 데이터 디비에 저장 
 
             if (string.IsNullOrWhiteSpace(viewModel.UserId) || string.IsNullOrWhiteSpace(viewModel.UserName))
             {
@@ -1042,7 +1049,7 @@ namespace MCC_Launcher.Services
             }
         }
         public UserInfo ToUserInfo(UserViewModel viewModel)
-        // UserViewModel을 UserInfo로 변환하는 메서드
+        // UserViewModel을 UserInfo로 변환하는 메서드 편집용에서 디비용으로 변경 
         {
             return new UserInfo
             {

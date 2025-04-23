@@ -23,6 +23,8 @@ using DevExpress.Mvvm.Xpf;
 using System.Linq;
 using DevExpress.Xpf.Core;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using System.Xml.Linq;
+using Microsoft.EntityFrameworkCore;
 
 
 
@@ -30,6 +32,10 @@ namespace MCC_Launcher.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
+        //public const string XmlFilePath = @"\\Gms-mcc-nas01\audio-file\test1\programs";
+        public string programsRootFolder = @"\\Gms-mcc-nas01\audio-file\test1\programs";
+
+
         private readonly LauncherService launcherService = new LauncherService();
         public IDialogService LoginDialogService => this.GetService<IDialogService>("LoginDialog");
         public IDialogService RolePermissionManagementDialogService => this.GetService<IDialogService>("RolePermissionManagementDialog");
@@ -177,6 +183,7 @@ namespace MCC_Launcher.ViewModels
         public MainViewModel()
         {
 
+
             CreateAnonymousUser();
 
             IsAdmin();
@@ -201,11 +208,14 @@ namespace MCC_Launcher.ViewModels
             RoleManagementCommand = new DelegateCommand(ShowRoleManagementDialog);
 
 
+            //LoadProgramsFromDirectory(XmlFilePath);
+            //asdasd(programsRootFolder);
 
 
         }
         private void SetSeletedProgram(object param)
         {
+            //
             if (param is Program seleted)
             {
                 SelectedProgram = seleted;
@@ -231,7 +241,7 @@ namespace MCC_Launcher.ViewModels
         private async void LaunchSelectedVersion()
         //
         {
-            // 여기서 먼저 검사 여기서 통과하면 다음 진행 
+            //계정이 권한이 부여된 역할을 가지고 있는 지 확인 전역적인 기능만 사용 
             try
             {
                 // 프로그램을 비교하려면 해당 프로그램 이름이랑 비교를 해야겠네 이름 가져오고 그거랑 비교하기 
@@ -255,16 +265,18 @@ namespace MCC_Launcher.ViewModels
                 bool isInstalled = launcherService.IsProgramInstalled(SelectedProgram.FolderPath, SelectedVersion.Path);
                 string installPath = launcherService.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
 
+                //역할에 권한 있는지 확인 
                 bool hasExecutePermission = launcherService.HasPermission(LoggedInUser, SelectedProgram.ProgramCode, "Execute");
                 bool hasInstallPermission = launcherService.HasPermission(LoggedInUser, SelectedProgram.ProgramCode, "Install");
 
                 bool allowAnonymousExecute = SelectedVersion.AllowAnonymousRun;
                 bool allowAnonymousInstall = SelectedVersion.AllowAnonymousInstall;
 
+                // 비로그인도 가능한지 아니면 권한이 있는지 확인 
                 bool canExecute = allowAnonymousExecute || hasExecutePermission;
                 bool canInstall = allowAnonymousInstall || hasInstallPermission;
 
-                // ✅ 실행 조건
+                // 실행 조건
                 if (isInstalled && canExecute)
                 {
                     var result = MessageBoxService.Show($"{SelectedProgram.ProgramName} 프로그램을 실행합니다.", "실행", MessageBoxButton.OK);
@@ -273,7 +285,9 @@ namespace MCC_Launcher.ViewModels
                         var versionname = Path.GetFileName(SelectedVersion.Path);
                         var FolderPath = launcherService.GetInstalledProgramFolderPath(SelectedProgram.FolderPath);
                         launcherService.SaveLastUsedVersion(FolderPath, versionname);
-                        launcherService.RunProgram(SelectedProgram.FolderPath, SelectedVersion.Path, SelectedVersion.MainExecutable);
+                       
+                         var token =    GenerateToken();
+                        launcherService.RunProgram(SelectedProgram.FolderPath, SelectedVersion.Path, SelectedVersion.MainExecutable, token);
                     }
 
                     return;
@@ -287,7 +301,7 @@ namespace MCC_Launcher.ViewModels
                     {
                         var progress = new Progress<int>(value => ProgressBarValue = value);
                         await launcherService.InstallProgram(progress, SelectedVersion.Path, SelectedProgram.FolderPath, SetProgressBarVisibility);
-                        GenerateToken();
+                        InstallOrRun(); // UI 버튼 업데이트
                     }
 
                     return;
@@ -315,12 +329,12 @@ namespace MCC_Launcher.ViewModels
         private void LoadPrograms()
         {
 
-            Programs = launcherService.LoadPrograms();
+            Programs = launcherService.LoadProgramLIst();
 
             if (Programs.Count == 0)
             {
                 //Task.Delay(10000);
-                Programs = launcherService.LoadPrograms();
+                Programs = launcherService.LoadProgramLIst();
             }
             InstallOrRun();
             //InsertData();
@@ -337,7 +351,7 @@ namespace MCC_Launcher.ViewModels
             }
 
             bool isInstalled = launcherService.IsProgramInstalled(SelectedProgram.FolderPath, SelectedVersion.Path);
-            SelectedVersion = launcherService.LoadMetaData(SelectedVersion.Path, SelectedVersion);
+            SelectedVersion = launcherService.LoadMetaData(SelectedVersion.Path, SelectedVersion);// 여기서 메타데이터 왜보는거지? 
 
             PatchNote = SelectedVersion.PatchNote;
 
@@ -401,7 +415,7 @@ namespace MCC_Launcher.ViewModels
                 LaunchSelectedVersion();
             }
         }
-        private void OptionExport()
+        private void OptionExport()// 사용 
         {
             if (SelectedProgram == null || SelectedVersion == null)
             {
@@ -485,6 +499,7 @@ namespace MCC_Launcher.ViewModels
 
         private void LoadBackupOption()
         {//software version 불러오기
+            // 사용안함
 
             // 1. 백업 폴더 선택 (폴더 선택 대화상자)
             string selectedBackupFolder = launcherService.ImportOptionFolder(SelectedProgram.FolderPath, SelectedVersion.Path);
@@ -620,11 +635,27 @@ namespace MCC_Launcher.ViewModels
             }
 
         }
-        public void GenerateToken()
+        public string GenerateToken()
         {
             //토큰만들기 
+
+            //string selectedBackupFolder = launcherService.ImportOptionFolder(SelectedProgram.FolderPath, SelectedVersion.Path);
+            //if (string.IsNullOrEmpty(selectedBackupFolder))
+            //    return null;
+
+            //// 2. 백업 옵션 불러오기 (폴더 기준으로 옵션 여러 파일을 읽음)
+            //var groupedOptions = launcherService.LoadUserOptionsGrouped(selectedBackupFolder);
             JwtService jwtService = new JwtService();
-            jwtService.GenerateToken(LoggedInUser);
+            // 옵션 파일패스 
+
+            const string file = "ProgramSettings.xml";
+            // 설치된 프로그램 경로 가져오기
+            string installPath = launcherService.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
+
+
+            // 원본 설정 파일 경로
+            string sourceFilePath = Path.Combine(installPath, file);
+          return   jwtService.GenerateToken(LoggedInUser, sourceFilePath);
         }
         public void Logout()
         {
@@ -727,7 +758,119 @@ namespace MCC_Launcher.ViewModels
             );
 
         }
-    }
+        public static List<ProgramsEntity> LoadProgramsFromDirectory(string programsRootFolder)// xml 디비로 옮기기 이전 
+        {
+            var result = new List<ProgramsEntity>();
+
+            if (!Directory.Exists(programsRootFolder))
+                return result;
+
+            var programDirs = Directory.GetDirectories(programsRootFolder); // 예: AudioServer, ProgramA...
+
+            foreach (var programDir in programDirs)
+            {
+                string programXmlPath = Path.Combine(programDir, "Program.xml");
+
+                if (!File.Exists(programXmlPath))
+                    continue;
+
+                XDocument doc = XDocument.Load(programXmlPath);
+                var programElement = doc.Element("Program");
+
+                if (programElement == null)
+                    continue;
+
+                var name = programElement.Element("Name")?.Value ?? "";
+                var description = programElement.Element("Description")?.Value ?? "";
+                var icon = programElement.Element("Icon")?.Value ?? "";
+
+                var versions = new List<ProgramVersionEntity>();
+
+                var versionElements = programElement.Element("Versions")?.Elements("Version") ?? Enumerable.Empty<XElement>();
+
+                foreach (var versionElement in versionElements)
+                {
+                    var versionName = versionElement.Element("Number")?.Value ?? "";
+                    var path = versionElement.Element("Path")?.Value ?? "";
+
+                    versions.Add(new ProgramVersionEntity
+                    {
+                        VersionName = versionName,
+                        SmbSourcePath = path,
+                        InstallPath = "", // 이후 처리
+                        MainExecutable = "", // metadata.xml에서 채움
+                        PatchNote = ""
+                    });
+                }
+
+                var programEntity = new ProgramsEntity
+                {
+                    Name = name,
+                    Description = description,
+                    IconPath = icon,
+                    AllowAnonymousInstall = false,
+                    AllowAnonymousRun = false,
+                    Versions = versions
+                };
+
+                result.Add(programEntity);
+            }
+
+            return result;
+        }
+
+        public void asdasd(string programsRootFolder) // xml 디비로 이전하기 
+        {
+
+            var programs = LoadProgramsFromDirectory(programsRootFolder);
+
+            using (var context = new LauncherDbContext())
+            {
+                foreach (var program in programs)
+                {
+                    // 프로그램 존재 여부 확인
+                    var existingProgram = context.Programs
+                        .Include(p => p.Versions)
+                        .FirstOrDefault(p => p.ProgramCode == program.ProgramCode);
+
+                    if (existingProgram == null)
+                    {
+                        // 새 프로그램 등록 (VersionId 초기화)
+                        foreach (var version in program.Versions)
+                        {
+                            version.VersionId = 0; // IDENTITY 자동 설정
+                        }
+
+                        context.Programs.Add(program);
+                    }
+                    else
+                    {
+                        // 프로그램 정보 업데이트
+                        existingProgram.Name = program.Name;
+                        existingProgram.Description = program.Description;
+                        existingProgram.AllowAnonymousInstall = program.AllowAnonymousInstall;
+                        existingProgram.AllowAnonymousRun = program.AllowAnonymousRun;
+
+                        // 버전 중복 여부 확인 후 추가
+                        foreach (var version in program.Versions)
+                        {
+                            bool versionExists = existingProgram.Versions
+                                .Any(v => v.VersionName == version.VersionName);
+
+                            if (!versionExists)
+                            {
+                                version.VersionId = 0; // 자동 증가 유도
+                                version.ProgramCode = existingProgram.ProgramCode;
+                                existingProgram.Versions.Add(version);
+                            }
+                        }
+                    }
+                }
+
+                context.SaveChanges();
+            }
+        }
+        }
 }
 
 

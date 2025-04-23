@@ -226,8 +226,8 @@
                                                   Command="{Binding backupCommand}" />
                                         <MenuItem Header="옵션Import"
                                                   Command="{Binding OptionsImportCommand}" />
-                                        <MenuItem Header="versionsload"
-                                                  Command="{Binding LoadVersionsCommand}" />
+                                        <!--<MenuItem Header="versionsload"
+                                                  Command="{Binding LoadVersionsCommand}" />-->
                                     </ContextMenu>
                                 </Button.ContextMenu>
                                 <StackPanel>
@@ -259,9 +259,9 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding Number}" />
-                                        <TextBlock Text=" (설치됨)"
+                                        <!--<TextBlock Text=" (설치됨)"
                                                    Foreground="Green"
-                                                   Visibility="{Binding isInstalled, Converter={StaticResource boolToVisibilityConverter}}" />
+                                                   Visibility="{Binding SelectedVersion.isInstalled, Converter={StaticResource boolToVisibilityConverter}}" />-->
                                     </StackPanel>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
