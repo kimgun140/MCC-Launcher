@@ -358,6 +358,7 @@ namespace MCC_Launcher.Services
             foreach (var elem in userRoot.Elements())
             {
                 if (elem.Name == "program" || elem.Name == "version")
+                   
                     continue;
 
                 if (elem.Name == "date")
@@ -543,6 +544,7 @@ namespace MCC_Launcher.Services
         }
 
         public void SaveLastUsedVersion(string programFolderPath, string versionName)
+            //빼 제발
         {
             string recordFilePath = Path.Combine(programFolderPath, "last_used_version.txt");
             // 최근 실행한 버전을 기록 
@@ -562,7 +564,7 @@ namespace MCC_Launcher.Services
 
 
         public UserOption? LatestRunVersionRecord(string programFolder, string versionPath)
-            // 가장 최근 버전 확인  
+            // 가장 최근 버전 확인  빼 제발 
         {
 
             const string file = "ProgramSettings.xml";
@@ -729,7 +731,7 @@ namespace MCC_Launcher.Services
                  Dictionary<string, List<OptionProperty>> currentOptions,
                  List<SoftwareVersion> softwareVersions,
                  string targetVersion)
-        //호환 
+        //스키마로 버전 맞추기 
         {
             var result = new Dictionary<OptionCategory, Dictionary<string, string>>();
 
@@ -920,7 +922,7 @@ namespace MCC_Launcher.Services
             }
         }
         public async Task<UserInfo?> Authenticate(string userId, string password)
-        //로그인 사용자 정보 
+        //로그인 사용자 정보 입력
         {
             using (var _context = new LauncherDbContext())
             {

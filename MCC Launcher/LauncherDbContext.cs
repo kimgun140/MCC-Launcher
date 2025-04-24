@@ -18,6 +18,7 @@ namespace MCC_Launcher
         public DbSet<ProgramsEntity> Programs { get; set; }
         public DbSet<ProgramVersionEntity> ProgramVersion { get; set; }
         public DbSet<RoleProgramPermission> RoleProgramPermissions { get; set; }
+        public DbSet<UserProgramPeriod> UserProgramPeriods { get; set; } //
         //public DbSet<LauncherInfo> Launchers { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -81,6 +82,23 @@ namespace MCC_Launcher
                 .HasOne(rpp => rpp.Permission)
                 .WithMany(p => p.RoleProgramPermissions)
                 .HasForeignKey(rpp => rpp.PermissionId);
+
+
+            modelBuilder.Entity<UserProgramPeriod>()
+    .HasKey(upp => new { upp.UserId, upp.ProgramCode });  // 복합 키 지정
+
+            modelBuilder.Entity<UserProgramPeriod>()
+                .HasOne(upp => upp.User)
+                .WithMany() // or WithMany(u => u.UserProgramPeriods) if collection exists
+                .HasForeignKey(upp => upp.UserId)
+                .OnDelete(DeleteBehavior.Restrict); // 필요 시 삭제 동작 설정
+
+            modelBuilder.Entity<UserProgramPeriod>()
+                .HasOne(upp => upp.Program)
+                .WithMany() // or WithMany(p => p.UserProgramPeriods)
+                .HasForeignKey(upp => upp.ProgramCode)
+                .OnDelete(DeleteBehavior.Restrict);
         }
+
     }
 }
