@@ -46,27 +46,73 @@ namespace MCC_Launcher.Services
         //}
 
 
-        public string GenerateToken(UserInfo user, string OptionsFilePath)
-        // 
+        //public string GenerateToken(User user, string OptionsFilePath)
+        //// 
+        //{
+        //    var role = user.UserRoles.FirstOrDefault()?.Role.RoleName ?? "Guest";
+
+        //    var claims = new List<Claim>
+        //    {
+        //   new Claim("UserId", user.UserId),
+        //   //new Claim(JwtRegisteredClaimNames.Sub, user.UserId),
+        //    new Claim(ClaimTypes.Role, role),
+        //    new Claim("activated", user.Activated.ToString().ToLower()) // true/false 저장
+        //    // activated 는 다른걸로 수저오디어야함 사용기간 만료인지 아닌지로 activated로 하면 막힐수 없음 
+        //};
+        //    var options = LoadOptionElementsFromXml(OptionsFilePath);
+        //    foreach (var option in options)
+        //    {
+        //        claims.Add(new Claim($"option:{option.Key}", option.Value));
+        //    }
+        //    //var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+        //    var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+
+
+        //    var token = new JwtSecurityToken(
+        //        issuer: "MCC_Launcher",
+        //        audience: "MCC_Launcher",
+        //        claims: claims,
+        //        expires: DateTime.UtcNow.AddHours(1),
+        //        signingCredentials: credentials
+        //    );
+
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+
+        //}
+
+        private bool CheckUserProgramPeriod(string userId)
         {
-            var role = user.UserRoles.FirstOrDefault()?.Role.RoleName ?? "Guest";
+            using var context = new LauncherDbContext();
+            var now = DateTime.Now;
+
+            return context.UserProgramPeriods.Any(p =>
+                p.UserId == userId &&
+                (!p.StartDate.HasValue || p.StartDate <= now) &&
+                (!p.EndDate.HasValue || p.EndDate >= now));
+        }
+        public string GenerateToken(User user, string optionsFilePath)
+        {
+            // 역할 이름 가져오기
+            var role = user.Role?.RoleName ?? "Guest";
+
+            // 사용 기간 만료 여부 확인 (예: UserProgramPeriod 활용)
+            bool isActive = CheckUserProgramPeriod(user.UserId);
 
             var claims = new List<Claim>
-            {
-           new Claim("UserId", user.UserId),
-           //new Claim(JwtRegisteredClaimNames.Sub, user.UserId),
-            new Claim(ClaimTypes.Role, role),
-            new Claim("activated", user.Activated.ToString().ToLower()) // true/false 저장
-            // activated 는 다른걸로 수저오디어야함 사용기간 만료인지 아닌지로 activated로 하면 막힐수 없음 
-        };
-            var options = LoadOptionElementsFromXml(OptionsFilePath);
+    {
+        new Claim("UserId", user.UserId),
+        new Claim(ClaimTypes.Role, role),
+        new Claim("isActive", isActive.ToString().ToLower())  // true/false 저장
+    };
+
+            // 옵션 XML에서 읽어온 값 추가
+            var options = LoadOptionElementsFromXml(optionsFilePath);
             foreach (var option in options)
             {
                 claims.Add(new Claim($"option:{option.Key}", option.Value));
             }
-            //var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
-            var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
+            var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: "MCC_Launcher",
@@ -77,8 +123,8 @@ namespace MCC_Launcher.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-
         }
+
         public Dictionary<string, string> LoadOptionElementsFromXml(string filePath)
         { // xml 변환 
             var doc = XDocument.Load(filePath);

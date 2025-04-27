@@ -10,10 +10,11 @@ namespace MCC_Launcher.Models
     {
         public string UserId { get; set; }
         public int ProgramCode { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
-        public  UserInfo User { get; set; }
-        public  ProgramsEntity Program { get; set; }
+
+        public User User { get; set; }
+        public  ProgramEntity Program { get; set; }
     }
 }

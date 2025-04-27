@@ -3,6 +3,7 @@ using System;
 using MCC_Launcher;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MCC_Launcher.Migrations
 {
     [DbContext(typeof(LauncherDbContext))]
-    partial class LauncherDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250425085400_RecreatePrograms")]
+    partial class RecreatePrograms
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,12 +48,6 @@ namespace MCC_Launcher.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ProgramId"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("IconPath")
-                        .HasColumnType("text");
 
                     b.Property<string>("ProgramName")
                         .IsRequired()

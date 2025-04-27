@@ -25,10 +25,10 @@ namespace MCC_Launcher.ViewModels
         }
         protected ICurrentDialogService CurrentDialogService => GetService<ICurrentDialogService>();
 
-        public UserInfo? AuthenticatedUser { get; private set; }
+        public Models.User? AuthenticatedUser { get; private set; }
         public class LoginResultContext
         {
-            public UserInfo? AuthenticatedUser { get; set; }
+            public Models.User? AuthenticatedUser { get; set; }
         }
 
 

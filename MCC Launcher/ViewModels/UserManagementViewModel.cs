@@ -17,7 +17,7 @@ namespace MCC_Launcher.ViewModels
     {
         LauncherService Launcherservice = new LauncherService();
         IMessageBoxService MessageBoxService { get { return GetService<IMessageBoxService>(); } }
-        public ObservableCollection<UserInfo> UserInfoList { get; set; } = new ObservableCollection<UserInfo>();
+        public ObservableCollection<Models.User> UserInfoList { get; set; } = new ObservableCollection<Models.User>();
         public IDialogService DialogService => this.GetService<IDialogService>();
 
         public UserViewModel SelectedUser
@@ -32,9 +32,9 @@ namespace MCC_Launcher.ViewModels
 
 
         // 사용자관리 
-        public UserInfo UserInfo
+        public Models.User UserInfo
         {
-            get => GetValue<UserInfo>();
+            get => GetValue<Models.User>();
             set => SetValue(value);
         } // 사용자 정보 선택하면 다이얼로그 다시 띄워서 수정하게 하기 
         public DelegateCommand AddUserCommand { get; set; }
@@ -43,7 +43,7 @@ namespace MCC_Launcher.ViewModels
 
         public class UserResultContext
         {
-            public UserInfo? NewUser { get; set; }
+            public Models.User? NewUser { get; set; }
 
         }
         private UserResultContext _context;
@@ -72,28 +72,24 @@ namespace MCC_Launcher.ViewModels
         //추가, 삭제,변경
         public void LoadUserList()
         {
-
-
             using var context = new LauncherDbContext();
+
             var userList = context.Users
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
+                .Include(u => u.Role)
                 .Select(u => new UserViewModel
                 {
                     UserId = u.UserId,
                     UserName = u.Name,
-                    RoleName = u.UserRoles.FirstOrDefault().Role.RoleName,
+                    RoleName = u.Role != null ? u.Role.RoleName : "",
                     Activated = u.Activated,
-                    RoleId = u.UserRoles.FirstOrDefault() != null ?
-                 u.UserRoles.FirstOrDefault().Role.RoleId : 0 // 0 또는 -1 같은 기본값
-                    //,RoleId = u.UserRoles.FirstOrDefault().RoleId
-                    // 역할 첫번째것만 보임 
+                    RoleId = u.RoleId
                 }).ToList();
 
             Users.Clear();
             foreach (var user in userList)
                 Users.Add(user);
         }
+
 
 
         public void AddUser()

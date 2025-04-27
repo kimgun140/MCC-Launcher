@@ -134,6 +134,10 @@
                                                   Visibility="{Binding IsAdminUser, Converter={StaticResource boolToVisibilityConverter} }" />
                                         <MenuItem Header="전체 관리 "
                                                   Command="{Binding RoleManagementCommand}" />
+                                        <MenuItem 
+                                            Header="등록"
+                                                  Command="{Binding RegisterCommand}"
+                                            />
                                         <MenuItem Header="로그아웃"
                                                   Command="{Binding LogoutCommand}" />
                                     </ContextMenu>
