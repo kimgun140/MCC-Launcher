@@ -47,7 +47,7 @@ namespace MCC_Launcher
                 return null;
             }
         }
-        public int ProgramCode { get; set; } // 프로그램 코드
+        public int ProgramId { get; set; } // 프로그램 코드
         //public string Description { get; set; } // 프로그램 설명
         public bool Allowed { get; set; }
 

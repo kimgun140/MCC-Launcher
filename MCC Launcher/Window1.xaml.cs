@@ -23,6 +23,7 @@ namespace MCC_Launcher
     public partial class Window1 : Window
     {
         public ObservableCollection<ProgramDisplayModel> Programs { get; set; } = new ObservableCollection<ProgramDisplayModel>();
+        public UserPermissionInfo LoggedInUserPermissions { get; set; } // 로그인 시 세팅
 
         public Window1()
         {
@@ -42,7 +43,24 @@ namespace MCC_Launcher
 
         // ViewModel에서 사용할 예시
 
-        public void LoadProgramList()
+        //public void LoadProgramList() //프로그램 목록 표시 
+        //{
+        //    Programs.Clear();
+
+        //    var programList = LoadProgramsFromDatabase();
+
+        //    foreach (var program in programList)
+        //    {
+        //        Programs.Add(new ProgramDisplayModel
+        //        {
+        //            ProgramName = program.ProgramName,
+        //            Description = program.Description,
+        //            SmbSourcePath = program.SmbSourcePath,
+        //            //IconPath = program.IconPath
+        //        });
+        //    }
+        //}
+        public void LoadProgramList()//필터링
         {
             Programs.Clear();
 
@@ -50,13 +68,49 @@ namespace MCC_Launcher
 
             foreach (var program in programList)
             {
+                var firstVersion = program.Versions.FirstOrDefault();
+                if (firstVersion == null)
+                    continue;
+
+                // 🔥 allowed 필터링 (PermissionId 1=Install, 2=Run 라고 가정)
+                bool hasPermission = LoggedInUserPermissions.Permissions
+                    .Any(p => p.ProgramId == program.ProgramId && (p.PermissionId == 1 || p.PermissionId == 2));
+
+                if (!hasPermission)
+                    continue; // 권한 없으면 추가 안함
+
                 Programs.Add(new ProgramDisplayModel
                 {
                     ProgramName = program.ProgramName,
                     Description = program.Description,
-                    IconPath = program.IconPath
+                    SmbSourcePath = firstVersion.SmbSourcePath
                 });
             }
         }
+
+
+
+
+        //public void LoadProgramList()
+        //{
+        //    Programs.Clear();
+
+        //    var programList = LoadProgramsFromDatabase();
+
+        //    foreach (var program in programList)
+        //    {
+        //        var firstVersion = program.Versions.FirstOrDefault(); // 첫 번째 버전 기준
+
+        //        if (firstVersion != null)
+        //        {
+        //            Programs.Add(new ProgramDisplayModel
+        //            {
+        //                ProgramName = program.ProgramName,
+        //                Description = program.Description,
+        //                SmbSourcePath = firstVersion.SmbSourcePath
+        //            });
+        //        }
+        //    }
+        //}
     }
 }

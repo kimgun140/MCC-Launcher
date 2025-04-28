@@ -38,7 +38,7 @@
         <!-- 프로그램 목록 -->
         <ListBox ItemsSource="{Binding Programs}"
                  SelectedItem="{Binding SelectedProgram}"
-                 DisplayMemberPath="Name"
+                 DisplayMemberPath="ProgramName"
                  Grid.Column="1"
                  Margin="10" />
 

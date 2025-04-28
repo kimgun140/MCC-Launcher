@@ -15,7 +15,7 @@ namespace MCC_Launcher.ViewModels
         IMessageBoxService MessageBoxService { get { return GetService<IMessageBoxService>(); } }
         public ObservableCollection<Role> Roles { get; set; } = new();//역할들 
         // 권한 설치, 실행 추가 가능  
-        public ObservableCollection<ProgramEntity> Programs { get; set; } = new();//프로그램
+        public ObservableCollection<ProgramEntity> Programs { get; set; } = new ObservableCollection<ProgramEntity>();//프로그램
 
         public ObservableCollection<PermissionViewModel> AvailablePermissions { get; set; } = new();// 
 

@@ -33,7 +33,7 @@ namespace MCC_Launcher.ViewModels
     public class MainViewModel : ViewModelBase
     {
         //public const string XmlFilePath = @"\\Gms-mcc-nas01\audio-file\test1\programs";
-        public string programsRootFolder = @"\\Gms-mcc-nas01\audio-file\test1\programs";// xml db 이전용 
+        //public string programsRootFolder = @"\\Gms-mcc-nas01\audio-file\test1\programs";// xml db 이전용 
 
 
         private readonly LauncherService launcherService = new LauncherService();
@@ -227,7 +227,7 @@ namespace MCC_Launcher.ViewModels
             var dbProgram = launcherService.GetProgramByName(SelectedProgram.ProgramName);
             if (dbProgram != null)
             {
-                SelectedProgram.ProgramCode = dbProgram.ProgramId;
+                SelectedProgram.ProgramId = dbProgram.ProgramId;
                 // 필요한 경우 AllowAnonymousInstall, AllowAnonymousRun도 함께 복사
                 //SelectedVersion.AllowAnonymousInstall = dbProgram.AllowAnonymousInstall;
                 //SelectedVersion.AllowAnonymousRun = dbProgram.AllowAnonymousRun;
@@ -257,7 +257,7 @@ namespace MCC_Launcher.ViewModels
                 if (SelectedVersion == null)
                     return;
                 //SelectedProgram.programcode가 있어야함 
-                launcherService.SetAnonymousPermissions(SelectedProgram.ProgramCode, SelectedVersion);
+                launcherService.SetAnonymousPermissions(SelectedProgram.ProgramId, SelectedVersion);
                 //비로그인 사용가능 여부 업데이트 
 
                 //선택된 프로그램의 정보를 db 접근해서 업데이트해야함 
@@ -268,8 +268,8 @@ namespace MCC_Launcher.ViewModels
                 string installPath = launcherService.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
 
                 //역할에 권한 있는지 확인 
-                bool hasExecutePermission = launcherService.HasPermission(LoggedInUser, SelectedProgram.ProgramCode, "Execute");
-                bool hasInstallPermission = launcherService.HasPermission(LoggedInUser, SelectedProgram.ProgramCode, "Install");
+                bool hasExecutePermission = launcherService.HasPermission(LoggedInUser, SelectedProgram.ProgramId, "Execute");
+                bool hasInstallPermission = launcherService.HasPermission(LoggedInUser, SelectedProgram.ProgramId, "Install");
 
                 bool allowAnonymousExecute = SelectedVersion.AllowAnonymousRun;
                 bool allowAnonymousInstall = SelectedVersion.AllowAnonymousInstall;
@@ -859,12 +859,13 @@ namespace MCC_Launcher.ViewModels
         {
             var registration = new ProgramRegistrationViewModel
             {
-                ProgramName = "AudioServer",
+                ProgramName = "test",
                 Description = "오디오 녹음/재생 관리 프로그램",
-                IconPath = "icon.png", // 실제로 사용할 아이콘 경로 또는 그냥 임시값
+                SmbSourcePath = @"\\Gms-mcc-nas01\audio-file\test1\programs\test", // SMB 경로 설정하는걸로 바뀌어야지 , 권한도 등록될거고
+                //IconPath = "icon.png", // 실제로 사용할 아이콘 경로 또는 그냥 임시값
                 Versions = new List<ProgramVersionRegistrationViewModel>
     {
-        new ProgramVersionRegistrationViewModel
+        new ProgramVersionRegistrationViewModel // 폴더를 선택해서 넣게  만들어야지 
         {
             VersionName = "v1.0.1",
             LocalFolderPath = @"C:\Users\kimgu\OneDrive\바탕 화면\AudioServer", // 테스트용 로컬 폴더
@@ -875,7 +876,7 @@ namespace MCC_Launcher.ViewModels
             };
             RegisterService registerService = new RegisterService();
             var storageRootPath = @"\\Gms-mcc-nas01\audio-file\test1\programs"; // 스토리지 경로
-            bool success = registerService.RegisterProgram(registration, storageRootPath);
+            bool success = registerService.RegisterProgram(registration, storageRootPath);//디비에 저장 
 
             if (success)
             {

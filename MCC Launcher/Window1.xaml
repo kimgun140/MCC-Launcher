@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MCC_Launcher.ViewModels"
         mc:Ignorable="d"
         Title="Window1" Height="450" Width="800">
-    <Grid Background="red">
+    <Grid >
         <DockPanel VerticalAlignment="Top"
                    HorizontalAlignment="Stretch"
                    Background="#0D0D0D">

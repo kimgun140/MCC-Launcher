@@ -8,7 +8,7 @@ namespace MCC_Launcher.Models
 {
     public class UserPermissionInfo
     {
-        public HashSet<(int ProgramCode, int PermissionId)> Permissions { get; set; } = new();
+        public HashSet<(int ProgramId, int PermissionId)> Permissions { get; set; } = new();
 
     }
 }

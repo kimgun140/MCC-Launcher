@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace MCC_Launcher.Models
 {
-    public class ProgramRegistrationViewModel
+    public class ProgramRegistrationViewModel //등록용 
     {
         public string ProgramName { get; set; }
         public string Description { get; set; }
-        public string IconPath { get; set; } // 로컬 아이콘 경로
+        //public string IconPath { get; set; } // 로컬 아이콘 경로
+        public string SmbSourcePath { get; set; } // 버전 폴더 경로
 
         public List<ProgramVersionRegistrationViewModel> Versions { get; set; } = new();
     }

@@ -31,7 +31,8 @@ namespace MCC_Launcher.Services
             {
                 ProgramName = viewModel.ProgramName,
                 Description = viewModel.Description,
-                IconPath = viewModel.IconPath,
+                SmbSourcePath = viewModel.SmbSourcePath, // UNC 스토리지 경로 
+                //IconPath = viewModel.IconPath,
                 Versions = new List<ProgramVersionEntity>()
             };
 
@@ -58,7 +59,10 @@ namespace MCC_Launcher.Services
 
                 programEntity.Versions.Add(versionEntity);
             }
-
+            if (programEntity.Versions.Any())
+            {
+                programEntity.SmbSourcePath = programEntity.Versions.First().SmbSourcePath;
+            }
             // DB 저장
             context.Programs.Add(programEntity);
             context.SaveChanges();

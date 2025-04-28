@@ -13,6 +13,7 @@
     <dxmvvm:Interaction.Behaviors>
         <dx:CurrentDialogService />
         <dx:DXMessageBoxService />
+
     </dxmvvm:Interaction.Behaviors>
     
     <Grid Margin="10">

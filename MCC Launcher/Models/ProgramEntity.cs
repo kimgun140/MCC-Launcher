@@ -33,7 +33,7 @@ namespace MCC_Launcher.Models
         public string ProgramName { get; set; }
 
         public string Description { get; set; }
-        public string IconPath { get; set; }
+        public string SmbSourcePath { get; set; }
 
         public ICollection<RoleProgramPermission> RoleProgramPermissions { get; set; }
         public ICollection<ProgramVersionEntity> Versions { get; set; }
@@ -44,18 +44,36 @@ namespace MCC_Launcher.Models
         public string ProgramName { get; set; }
         public string Description { get; set; }
         public string IconPath { get; set; }
+        public string SmbSourcePath { get; set; } // 버전 폴더 경로
 
-        // 🔥 UNC 경로를 BitmapImage로 변환
+        //public ImageSource IconSource
+        //{
+        //    get
+        //    {
+        //        if (string.IsNullOrEmpty(IconPath))
+        //            return null;
+
+        //        try
+        //        {
+        //            return new BitmapImage(new Uri(IconPath, UriKind.Absolute));
+        //        }
+        //        catch
+        //        {
+        //            return null;
+        //        }
+        //    }
+        //}
         public ImageSource IconSource
         {
             get
             {
-                if (string.IsNullOrEmpty(IconPath))
+                if (string.IsNullOrEmpty(SmbSourcePath))
                     return null;
 
                 try
                 {
-                    return new BitmapImage(new Uri(IconPath, UriKind.Absolute));
+                    var iconFullPath = System.IO.Path.Combine(SmbSourcePath, "icon.png");
+                    return new BitmapImage(new Uri(iconFullPath, UriKind.Absolute));
                 }
                 catch
                 {

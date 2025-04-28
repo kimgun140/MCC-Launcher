@@ -157,8 +157,6 @@ namespace MCC_Launcher.Services
 
                     ProgramMetaData metaData = (ProgramMetaData)programSerializer.Deserialize(reader);
 
-                    //var versionPath=  Path.Combine(folder, metaData.Version);//경로
-                    //var versionPath = metaData.Version;// 버전숫자 
 
                     //여기서 설치되었느지 검사해서 넣기 
 
@@ -177,10 +175,6 @@ namespace MCC_Launcher.Services
             }
             return version;
         }
-        //private void asdf()
-        //{
-
-        //}
 
         public void Connection()
         {
@@ -1136,6 +1130,7 @@ namespace MCC_Launcher.Services
                     RoleId = selectedRole.RoleId,
                     ProgramId = selectedProgram.ProgramId,
                     PermissionId = permission.PermissionId,
+                    
                     //VersionId = null // null로 설정
                 });
             }

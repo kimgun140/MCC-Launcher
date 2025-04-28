@@ -11,10 +11,10 @@ namespace MCC_Launcher.ViewModels
 {
     public class RoleEditDialogViewModel : ViewModelBase, ISupportParameter
     {//역할관리 
-        IMessageBoxService MessageBoxService { get { return GetService<IMessageBoxService>(); } }
+        IMessageBoxService MessageBoxService { get { return GetService<IMessageBoxService>(); } }// 디테일 추가창
         LauncherService LauncherService = new LauncherService();
 
-        public IDialogService DialogService => this.GetService<IDialogService>();
+        public IDialogService RoleDetailDialogViewService => this.GetService<IDialogService>("RoleDetailDialog");
 
         public ObservableCollection<Role> Roles { get; set; } = new();
 
@@ -67,7 +67,7 @@ namespace MCC_Launcher.ViewModels
         public void OnAddRole()
         {
             // 역할 관리 다이얼로그 열기
-            var result = DialogService.ShowDialog(
+            var result = RoleDetailDialogViewService.ShowDialog(
                     dialogCommands: null,
                     documentType: "RoleDetailDialogView",
                     title: "역할추가",
@@ -75,6 +75,7 @@ namespace MCC_Launcher.ViewModels
                     parameter: null,
                     parentViewModel: null
                 );
+
             RoleLoad();
 
         }

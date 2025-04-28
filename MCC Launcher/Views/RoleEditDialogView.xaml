@@ -13,8 +13,9 @@
     <dxmvvm:Interaction.Behaviors>
 
         <dx:DXMessageBoxService />
-        <!--<dx:DialogService DialogWindowStartupLocation="CenterOwner"
-                          DialogStyle="{StaticResource LoginDialogStyle }" />-->
+        <dx:DialogService x:Name="RoleDetailDialog"
+            DialogWindowStartupLocation="CenterOwner"
+                          DialogStyle="{StaticResource LoginDialogStyle }" />
         <dx:CurrentDialogService />
         <dx:DialogService />
 
