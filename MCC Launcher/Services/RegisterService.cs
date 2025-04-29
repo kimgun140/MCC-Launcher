@@ -173,7 +173,7 @@ namespace MCC_Launcher.Services
                 return false;
             }
         }
-        private void CopyFolder(string sourceFolder, string destinationFolder)
+        public void CopyFolder(string sourceFolder, string destinationFolder)
         {
             if (!Directory.Exists(destinationFolder))
             {

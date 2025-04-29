@@ -1,9 +1,11 @@
 ﻿using MCC_Launcher.Models;
+using MCC_Launcher.Services;
 using MCC_Launcher.Views;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,10 +29,14 @@ namespace MCC_Launcher
         public UserPermissionInfo LoggedInUserPermissions { get; set; } // 로그인 시 세팅
 
         public User LoggedInUser { get; set; }
-        public void LoginTest()
-        {
 
-        }
+        //public Program SelectedProgram
+        //{
+        //    get => GetValue<Program>();
+
+        //    set => SetValue(value);
+
+        //}
 
 
         //public User LoggedInUsertest
@@ -131,29 +137,63 @@ namespace MCC_Launcher
 
             return info;
         }
+        
+        public bool InstallProgram(ProgramEntity program, ProgramVersionEntity version)
+        {
+            RegisterService registerService = new RegisterService();
+            try
+            {
+                if (program == null || version == null)
+                    return false;
+
+                string sourceFolder = version.SmbSourcePath; // SMB 원본 경로
+                string destinationFolder = version.InstallPath; // 로컬 설치 경로
+
+                if (!Directory.Exists(sourceFolder))
+                {
+                    MessageBox.Show($"스토리지 경로를 찾을 수 없습니다: {sourceFolder}");
+                    return false;
+                }
+
+                if (!Directory.Exists(destinationFolder))
+                {
+                    Directory.CreateDirectory(destinationFolder);
+                }
+
+                registerService.CopyFolder(sourceFolder, destinationFolder);
+
+                MessageBox.Show($"{program.ProgramName} {version.VersionName} 설치 완료!");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"설치 중 오류 발생: {ex.Message}");
+                return false;
+            }
+        }
 
 
 
-        //public void LoadProgramList()
-        //{
-        //    Programs.Clear();
+            //public void LoadProgramList()
+            //{
+            //    Programs.Clear();
 
-        //    var programList = LoadProgramsFromDatabase();
+            //    var programList = LoadProgramsFromDatabase();
 
-        //    foreach (var program in programList)
-        //    {
-        //        var firstVersion = program.Versions.FirstOrDefault(); // 첫 번째 버전 기준
+            //    foreach (var program in programList)
+            //    {
+            //        var firstVersion = program.Versions.FirstOrDefault(); // 첫 번째 버전 기준
 
-        //        if (firstVersion != null)
-        //        {
-        //            Programs.Add(new ProgramDisplayModel
-        //            {
-        //                ProgramName = program.ProgramName,
-        //                Description = program.Description,
-        //                SmbSourcePath = firstVersion.SmbSourcePath
-        //            });
-        //        }
-        //    }
-        //}
-    }
+            //        if (firstVersion != null)
+            //        {
+            //            Programs.Add(new ProgramDisplayModel
+            //            {
+            //                ProgramName = program.ProgramName,
+            //                Description = program.Description,
+            //                SmbSourcePath = firstVersion.SmbSourcePath
+            //            });
+            //        }
+            //    }
+            //}
+        }
 }

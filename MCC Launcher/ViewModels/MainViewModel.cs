@@ -48,11 +48,28 @@ namespace MCC_Launcher.ViewModels
 
 
         public ObservableCollection<Program> Programs { get; set; } = new ObservableCollection<Program>();
-        public ObservableCollection<ProgramEntity> ProgramsEntity { get; set; } = new ObservableCollection<ProgramEntity>();
-
         public UserPermissionInfo userPermissionInfo { get; set; }
 
-        // lggedInUser = new UserInfo(); 이걸로 확인하면 될듯? 
+
+        public ObservableCollection<ProgramEntity> ProgramsEntity { get; set; } = new ObservableCollection<ProgramEntity>();
+
+        public ProgramEntity SelectedProgramtest
+        {
+
+            get => GetValue<ProgramEntity>();
+            set => SetValue(value);
+
+        }
+        public ObservableCollection<ProgramVersionEntity> Versions { get; set; } = new();
+        public ProgramVersionEntity SelectedVersion1 {
+            
+            get => GetValue<ProgramVersionEntity>(); 
+            set => SetValue(value);
+        }
+
+
+
+
         public bool IsAdminUser
         {
             // 다이얼로그 열릴때 새걸로 들어가서 null
@@ -141,6 +158,13 @@ namespace MCC_Launcher.ViewModels
             set => SetValue(value);
 
         }
+        public ProgramDisplayModel SelectedProgram123
+        {
+            get => GetValue<ProgramDisplayModel>();
+
+            set => SetValue(value);
+
+        }
         public string PatchNote
         {
             get { return GetValue<string>(); }
@@ -150,16 +174,12 @@ namespace MCC_Launcher.ViewModels
         public VersionInfo SelectedVersion
         {
             get => GetValue<VersionInfo>();
-            //set => SetValue(value, changedCallback: InstallOrRun);
+
             set
             {
                 SetValue(value, changedCallback: InstallOrRun);
-
-                //RaisePropertiesChanged(nameof(SelectedVersion));
                 RaisePropertiesChanged(nameof(PatchNote));
-                //변경된거 수동으로 알리기
-                //PatchNotes = null;//전체 목록 
-                //RaisePropertiesChanged(nameof(PatchNotes));
+
             }
 
         }
@@ -325,6 +345,8 @@ namespace MCC_Launcher.ViewModels
                     {
                         var progress = new Progress<int>(value => ProgressBarValue = value);
                         await launcherService.InstallProgram(progress, SelectedVersion.Path, SelectedProgram.FolderPath, SetProgressBarVisibility);
+
+                        //InstallProgram( );
                         InstallOrRun(); // UI 버튼 업데이트
                     }
 
@@ -742,8 +764,7 @@ namespace MCC_Launcher.ViewModels
             //권한 관리 다이얼로 ㅡ
 
 
-            //var resultContext = new RolePermissionManagementViewModel.DialogContext();
-            //resultContext.EditedUser = LoggedInUser;
+
             //다이얼로그가 열릴때 초기화된게 들어가서 저기에 넣으면 안됨 동작 순서를 바꾸던가, 아니면 초기값을 넣어줘야할듯
             var result = RolePermissionManagementDialogService.ShowDialog(
                  dialogCommands: null,
@@ -781,77 +802,66 @@ namespace MCC_Launcher.ViewModels
 
         }
 
-        public void ApplyPermissionsToPrograms(List<Program> programs, UserPermissionInfo permissionInfo, int permissionId)
-        {
-            //foreach (var program in programs)
-            //{
-            //    //if (int.TryParse(program.ProgramCode, out int code)) // 혹은 코드가 int라면 그대로
-            //    //{
-            //    //    program.Allowed = permissionInfo.Permissions.Contains((code, permissionId));
-            //    //}
-            //}
-            //프로그램 등록기능 스토리지에 올리기 
-            // 등록하려면 프로그램 폴더, 버전에 맞는 옵션 파일, 옵션스키마 파일, 
-        }
 
 
 
-        public static List<ProgramEntity> LoadProgramsFromDirectory(string programsRootFolder)
-        {
-            var result = new List<ProgramEntity>();
 
-            if (!Directory.Exists(programsRootFolder))
-                return result;
+        //public static List<ProgramEntity> LoadProgramsFromDirectory(string programsRootFolder)
+        //{
+        //    var result = new List<ProgramEntity>();
 
-            var programDirs = Directory.GetDirectories(programsRootFolder); // 예: AudioServer, ProgramA...
+        //    if (!Directory.Exists(programsRootFolder))
+        //        return result;
 
-            foreach (var programDir in programDirs)
-            {
-                string programXmlPath = Path.Combine(programDir, "Program.xml");
+        //    var programDirs = Directory.GetDirectories(programsRootFolder); // 예: AudioServer, ProgramA...
 
-                if (!File.Exists(programXmlPath))
-                    continue;
+        //    foreach (var programDir in programDirs)
+        //    {
+        //        string programXmlPath = Path.Combine(programDir, "Program.xml");
 
-                XDocument doc = XDocument.Load(programXmlPath);
-                var programElement = doc.Element("Program");
-                if (programElement == null)
-                    continue;
+        //        if (!File.Exists(programXmlPath))
+        //            continue;
 
-                var name = programElement.Element("Name")?.Value ?? "";
-                var description = programElement.Element("Description")?.Value ?? "";
-                var icon = programElement.Element("Icon")?.Value ?? "";
+        //        XDocument doc = XDocument.Load(programXmlPath);
+        //        var programElement = doc.Element("Program");
+        //        if (programElement == null)
+        //            continue;
 
-                var versions = new List<ProgramVersionEntity>();
-                var versionElements = programElement.Element("Versions")?.Elements("Version") ?? Enumerable.Empty<XElement>();
+        //        var name = programElement.Element("Name")?.Value ?? "";
+        //        var description = programElement.Element("Description")?.Value ?? "";
+        //        var icon = programElement.Element("Icon")?.Value ?? "";
 
-                foreach (var versionElement in versionElements)
-                {
-                    var versionName = versionElement.Element("Number")?.Value ?? "";
-                    var smbPath = versionElement.Element("Path")?.Value ?? "";
+        //        var versions = new List<ProgramVersionEntity>();
+        //        var versionElements = programElement.Element("Versions")?.Elements("Version") ?? Enumerable.Empty<XElement>();
 
-                    versions.Add(new ProgramVersionEntity
-                    {
-                        VersionName = versionName,
-                        SmbSourcePath = smbPath,
-                        InstallPath = "",
-                        MainExecutable = "",
-                        PatchNote = ""
-                    });
-                }
+        //        foreach (var versionElement in versionElements)
+        //        {
+        //            var versionName = versionElement.Element("Number")?.Value ?? "";
+        //            var smbPath = versionElement.Element("Path")?.Value ?? "";
 
-                var programEntity = new ProgramEntity
-                {
-                    ProgramName = name,
-                    //Description = description,
-                    //IconPath = icon,
-                    //Versions = versions
-                };
+        //            versions.Add(new ProgramVersionEntity
+        //            {
+        //                VersionName = versionName,
+        //                SmbSourcePath = smbPath,
+        //                InstallPath = "",
+        //                MainExecutable = "",
+        //                PatchNote = ""
+        //            });
+        //        }
 
-                result.Add(programEntity);
-            }
+        //        var programEntity = new ProgramEntity
+        //        {
+        //            ProgramName = name,
+        //            //Description = description,
+        //            //IconPath = icon,
+        //            //Versions = versions
+        //        };
 
-            return result;
-        }
+        //        result.Add(programEntity);
+        //    }
+
+        //    return result;
+        //}
 
         public void LoadProgramList()
         {
@@ -874,8 +884,6 @@ namespace MCC_Launcher.ViewModels
         }
         public void register()//이 함수를 옮겨서 작업하면 되겠네 
         {
-
-
             var result = ProgramRegistraionDialogService.ShowDialog(
                                 dialogCommands: null,
                                 documentType: "ProgramRegistrationDialogView",
@@ -887,57 +895,44 @@ namespace MCC_Launcher.ViewModels
         }
 
 
-        //public void XmlTODb(string programsRootFolder) // xml 디비로 이전하기 
-        //{
+        public bool InstallProgram(ProgramEntity program, ProgramVersionEntity version)
+        {// 프로그램 선택할때 
+            RegisterService registerService = new RegisterService();
+            try
+            {
+                if (program == null || version == null)
+                    return false;
 
-        //    var programs = LoadProgramsFromDirectory(programsRootFolder);
+                string sourceFolder = version.SmbSourcePath; // SMB 원본 경로
+                string destinationFolder = version.InstallPath; // 로컬 설치 경로
 
-        //    using (var context = new LauncherDbContext())
-        //    {
-        //        foreach (var program in programs)
-        //        {
-        //            // 프로그램 존재 여부 확인
-        //            var existingProgram = context.Programs
-        //                .Include(p => p.Versions)
-        //                .FirstOrDefault(p => p.ProgramId == program.ProgramId);
+                if (!Directory.Exists(sourceFolder))
+                {
+                    MessageBox.Show($"스토리지 경로를 찾을 수 없습니다: {sourceFolder}");
+                    return false;
+                }
 
-        //            if (existingProgram == null)
-        //            {
-        //                // 새 프로그램 등록 (VersionId 초기화)
-        //                foreach (var version in program.Versions)
-        //                {
-        //                    version.VersionId = 0; // IDENTITY 자동 설정
-        //                }
+                if (!Directory.Exists(destinationFolder))
+                {
+                    Directory.CreateDirectory(destinationFolder);
+                }
 
-        //                context.Programs.Add(program);
-        //            }
-        //            else
-        //            {
-        //                // 프로그램 정보 업데이트
-        //                existingProgram.Name = program.Name;
-        //                existingProgram.Description = program.Description;
-        //                existingProgram.AllowAnonymousInstall = program.AllowAnonymousInstall;
-        //                existingProgram.AllowAnonymousRun = program.AllowAnonymousRun;
+                registerService.CopyFolder(sourceFolder, destinationFolder);
 
-        //                // 버전 중복 여부 확인 후 추가
-        //                foreach (var version in program.Versions)
-        //                {
-        //                    bool versionExists = existingProgram.Versions
-        //                        .Any(v => v.VersionName == version.VersionName);
+                MessageBox.Show($"{program.ProgramName} {version.VersionName} 설치 완료!");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"설치 중 오류 발생: {ex.Message}");
+                return false;
+            }
+        }
+        public void asdf(object param)
+        {
 
-        //                    if (!versionExists)
-        //                    {
-        //                        version.VersionId = 0; // 자동 증가 유도
-        //                        version.ProgramCode = existingProgram.ProgramCode;
-        //                        existingProgram.Versions.Add(version);
-        //                    }
-        //                }
-        //            }
-        //        }
+        }
 
-        //        context.SaveChanges();
-        //    }
-        //}
     }
 }
 
