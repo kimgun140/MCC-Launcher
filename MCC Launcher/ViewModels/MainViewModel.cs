@@ -40,13 +40,15 @@ namespace MCC_Launcher.ViewModels
         public IDialogService LoginDialogService => this.GetService<IDialogService>("LoginDialog");
         public IDialogService RolePermissionManagementDialogService => this.GetService<IDialogService>("RolePermissionManagementDialog");
         public IDialogService UserManagementDialogService => this.GetService<IDialogService>("UserManagementDialog");
+        public IDialogService ProgramRegistraionDialogService => this.GetService<IDialogService>();
+
 
 
         protected ICurrentDialogService CurrentDialogService { get { return GetService<ICurrentDialogService>(); } }
 
 
         public ObservableCollection<Program> Programs { get; set; } = new ObservableCollection<Program>();
-        public ObservableCollection<ProgramEntity> ProgramsEntity { get; set; } = new ObservableCollection<ProgramEntity> ();
+        public ObservableCollection<ProgramEntity> ProgramsEntity { get; set; } = new ObservableCollection<ProgramEntity>();
 
         public UserPermissionInfo userPermissionInfo { get; set; }
 
@@ -57,7 +59,17 @@ namespace MCC_Launcher.ViewModels
             get => GetValue<bool>();
             set => SetValue(value);
         }
-
+        public bool IsLogged
+        // 로그인 여부 확인 
+        {
+            get => GetValue<bool>();
+            set => SetValue(value);
+        }
+        public bool LogOutButton
+        {
+            get => GetValue<bool>();
+            set => SetValue(value);
+        }
 
         public User LoggedInUser
         {
@@ -70,7 +82,17 @@ namespace MCC_Launcher.ViewModels
             }
 
         }
-
+        public void LoginButtonCheck()
+        {
+            if (LoggedInUser.Role.RoleName == "Anonymous")
+            {
+                IsLogged = true;
+                LogOutButton = false;
+                return;
+            }
+            IsLogged = false;
+            LogOutButton = true;
+        }
 
 
 
@@ -648,9 +670,6 @@ namespace MCC_Launcher.ViewModels
         {
             //토큰만들기 
 
-            //string selectedBackupFolder = launcherService.ImportOptionFolder(SelectedProgram.FolderPath, SelectedVersion.Path);
-            //if (string.IsNullOrEmpty(selectedBackupFolder))
-            //    return null;
 
             //// 2. 백업 옵션 불러오기 (폴더 기준으로 옵션 여러 파일을 읽음)
             //var groupedOptions = launcherService.LoadUserOptionsGrouped(selectedBackupFolder);
@@ -673,11 +692,7 @@ namespace MCC_Launcher.ViewModels
             MessageBoxService.Show("로그아웃 되었습니다.");
             //MessageBox.Show("로그아웃 되었습니다.", "로그아웃", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-        //public void Cancel()
-        //{
-        //    //CurrentDialogService.Close(MessageResult.OK);
 
-        //}
         public void UserManagementDialog()
         {
             //var resultContext = new UserManagementViewModel.LoginResultContext();
@@ -700,7 +715,9 @@ namespace MCC_Launcher.ViewModels
         // 관리자만 사용가능하게 
         {
             // 어드민인지 확인 
-            IsAdminUser = LoggedInUser?.Role?.RoleName == "Admin";
+            IsAdminUser = LoggedInUser?.Role?.RoleName == "admin";
+            LoginButtonCheck();
+
         }
         public User CreateAnonymousUser()
         {
@@ -855,37 +872,18 @@ namespace MCC_Launcher.ViewModels
                 .Include(p => p.Versions)
                 .ToList();
         }
-        public void register()//테스트용 
+        public void register()//이 함수를 옮겨서 작업하면 되겠네 
         {
-            var registration = new ProgramRegistrationViewModel
-            {
-                ProgramName = "test",
-                Description = "오디오 녹음/재생 관리 프로그램",
-                SmbSourcePath = @"\\Gms-mcc-nas01\audio-file\test1\programs\test", // SMB 경로 설정하는걸로 바뀌어야지 , 권한도 등록될거고
-                //IconPath = "icon.png", // 실제로 사용할 아이콘 경로 또는 그냥 임시값
-                Versions = new List<ProgramVersionRegistrationViewModel>
-    {
-        new ProgramVersionRegistrationViewModel // 폴더를 선택해서 넣게  만들어야지 
-        {
-            VersionName = "v1.0.1",
-            LocalFolderPath = @"C:\Users\kimgu\OneDrive\바탕 화면\AudioServer", // 테스트용 로컬 폴더
-            MainExecutable = "AudioServer.exe",
-            PatchNote = "초기 배포 버전입니다."
-        }
-    }
-            };
-            RegisterService registerService = new RegisterService();
-            var storageRootPath = @"\\Gms-mcc-nas01\audio-file\test1\programs"; // 스토리지 경로
-            bool success = registerService.RegisterProgram(registration, storageRootPath);//디비에 저장 
 
-            if (success)
-            {
-                MessageBox.Show("프로그램 등록 완료!");
-            }
-            else
-            {
-                MessageBox.Show("프로그램 등록 실패!");
-            }
+
+            var result = ProgramRegistraionDialogService.ShowDialog(
+                                dialogCommands: null,
+                                documentType: "ProgramRegistrationDialogView",
+                                title: "프로그램등록 ",
+                                viewModel: null,
+                                parameter: null,
+                                parentViewModel: null
+                                );
         }
 
 

@@ -41,7 +41,7 @@ namespace MCC_Launcher.ViewModels
             set => SetValue(value);
         }
 
-        private DialogContext _context;
+        public DialogContext _context;
         protected ICurrentDialogService CurrentDialogService => GetService<ICurrentDialogService>();
 
         public object Parameter
@@ -100,13 +100,47 @@ namespace MCC_Launcher.ViewModels
             if (_context == null)
                 return;
 
+
             _context.EditedUser.UserId = EditedUser.UserId;
             _context.EditedUser.UserName = EditedUser.UserName;
             _context.EditedUser.Activated = EditedUser.Activated;
-            _context.EditedUser.RoleName = SelectedRole.RoleName;
-            //여기를 넣어 달라고해야겠네 
-            _context.EditedUser.RoleId = SelectedRole.RoleId;
+            _context.EditedUser.RoleName = SelectedRole?.RoleName;
+            _context.EditedUser.RoleId = SelectedRole?.RoleId ?? 0;
+            _context.EditedUser.Pw = EditedUser.Pw;
 
+            if (string.IsNullOrWhiteSpace(_context.EditedUser.UserId))
+            {
+                MessageBoxService.Show("아이디를 입력해주세요.");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(_context.EditedUser.UserName))
+            {
+                MessageBoxService.Show("이름을 입력해주세요.");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(_context.EditedUser.Pw))
+            {
+                MessageBoxService.Show("비밀번호를 입력해주세요.");
+                return;
+            }
+            if (SelectedRole == null)
+            {
+                MessageBoxService.Show("역할(Role)을 선택해주세요.");
+                return;
+            }
+
+            using (var context = new LauncherDbContext())
+            {
+                bool exists = context.Users.Any(u => u.UserId == EditedUser.UserId);
+
+                if (exists && _context.Mode == UserEditMode.추가)
+                {
+                    MessageBoxService.Show("이미 존재하는 아이디입니다. 다른 아이디를 입력해주세요.");
+                    return;
+                }
+            }
+
+            // 예외 처리 필요  빈ㄱ칸 잇을ㄷ 
             switch (_context.Mode)
             // 이렇게 짜면 saveruser에서 검사하니까 ㄱㅊ구나 
             {
@@ -141,34 +175,6 @@ namespace MCC_Launcher.ViewModels
                     }
                     break;
             }
-
-            //if (_context.Mode == UserEditMode.삭제)
-            //{
-            //    if (LauncherService.UserDelete(_context.EditedUser))
-            //    {
-            //        MessageBoxService.Show("User deleted successfully.");
-            //        CurrentDialogService.Close();
-
-            //        return;
-            //    }
-            //    //이것도 bool로 바꿔야할듯 
-            //}
-            //else if (_context.Mode == UserEditMode.추가 || _context.Mode == UserEditMode.변경)
-            //    if (LauncherService.SaveUser(_context.EditedUser))
-            //    {
-            //        // 성공적으로 저장된 경우, 같은 메서드 사용하니까 
-            //        MessageBoxService.Show("User saved successfully.");
-            //        CurrentDialogService.Close();
-
-            //    }
-            //    else
-            //    {
-            //        // 저장 실패 시 처리
-            //        MessageBoxService.Show("Failed to save user.");
-            //    }
-
-
-
 
         }
 

@@ -2,7 +2,7 @@
 using DevExpress.Xpf.Core;
 using MCC_Launcher.Models;
 using MCC_Launcher.Services;
-using Microsoft.VisualBasic.ApplicationServices;
+//using Microsoft.VisualBasic.ApplicationServices;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,11 +24,12 @@ namespace MCC_Launcher.ViewModels
             set => SetValue(value);
         }
         protected ICurrentDialogService CurrentDialogService => GetService<ICurrentDialogService>();
+        protected IMessageBoxService MessageBoxService => GetService<IMessageBoxService>();
 
         public Models.User? AuthenticatedUser { get; private set; }
         public class LoginResultContext
         {
-            public Models.User? AuthenticatedUser { get; set; }
+            public User? AuthenticatedUser { get; set; }
         }
 
 
@@ -48,7 +49,7 @@ namespace MCC_Launcher.ViewModels
 
 
         private void OnEnterKeyPressed(KeyEventArgs e)
-            // 엔터 입력 
+        // 엔터 입력 
         {
             if (e.Key == Key.Enter)
             {
@@ -68,24 +69,30 @@ namespace MCC_Launcher.ViewModels
             }
         }
 
-        protected IMessageBoxService MessageBoxService => GetService<IMessageBoxService>();
 
         public async Task OnLogin()
         {
-
-
+            if (string.IsNullOrWhiteSpace(UserIdInput))
+            {
+                MessageBoxService.Show("아이디를 입력해주세요");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(PasswordInput))
+            {
+                MessageBoxService.Show("비밀번호를 입력해주세요");
+                return;
+            }
             AuthenticatedUser = await _launcherService.Authenticate(UserIdInput, PasswordInput);
 
             if (AuthenticatedUser == null)
             {
 
-                MessageBox.Show("로그인 실패", "로그인", MessageBoxButton.OK, MessageBoxImage.Error);
-                //실패 
-                //DialogService.Equals(null);
+                MessageBoxService.Show("아이디 또는 비밀번호 입력 오류입니다.", "로그인 실패", MessageBoxButton.OK);
                 return;
             }
             if (_context != null)
                 _context.AuthenticatedUser = AuthenticatedUser;
+            MessageBoxService.ShowMessage($"로그인 성공 \n{AuthenticatedUser.Name}님");
 
             CurrentDialogService.Close(MessageResult.OK);
 

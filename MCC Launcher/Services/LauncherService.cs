@@ -1,4 +1,5 @@
-﻿using DevExpress.Xpf.Core;
+﻿using DevExpress.Mvvm;
+using DevExpress.Xpf.Core;
 using MCC_Launcher.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,7 @@ namespace MCC_Launcher.Services
     public class LauncherService
 
     {
+
         [DllImport("mpr.dll")]
         // Windows API 함수 WNetAddConnection2를 호출하기 위한 선언입니다. 
         // Multiple Provider Router DLL 에서 제공하는 함수, smb 네트워크 드라이브 연결을 설정하는 역할을 한다. netresource 구조체를 전달하여 네트워크 경로를 지정하고, username과 password로 인증을 수행한다. 
@@ -915,7 +917,7 @@ namespace MCC_Launcher.Services
                 }
             }
         }
-        public async Task<Models.User?> Authenticate(string userId, string password)
+        public async Task<User?> Authenticate(string userId, string password)
         //로그인 사용자 정보 입력
         {
             using (var _context = new LauncherDbContext())
@@ -925,8 +927,9 @@ namespace MCC_Launcher.Services
 
                     //전체 불러오기  include
                     return await _context.Users
-                                    .Include(u => u.Role)
-                                    .FirstOrDefaultAsync(u => u.UserId == userId && u.Pw == password);
+                        .Include(u => u.Role)
+                            .ThenInclude(r => r.RoleProgramPermissions) // 연결된 권한까지 로드
+                        .FirstOrDefaultAsync(u => u.UserId == userId && u.Pw == password);
 
                 }
                 catch (Exception ex)
@@ -966,10 +969,7 @@ namespace MCC_Launcher.Services
         //    }
 
         //}
-        public void GenerateToken()
-        {
 
-        }
         public ProgramEntity? GetProgramByName(string programName)
         {
             //디비에서 프로그램 정보 가져오기 
@@ -1009,31 +1009,37 @@ namespace MCC_Launcher.Services
         }
         public bool SaveUser(UserViewModel viewModel)
         {
-            if (string.IsNullOrWhiteSpace(viewModel.UserId) || string.IsNullOrWhiteSpace(viewModel.UserName))
-            {
-                MessageBox.Show("아이디와 이름은 필수입니다.");
-                return false;
-            }
-
             try
             {
-                var userEntity = ToUser(viewModel); // viewmodel → User 변환 (RoleId 포함)
-
                 using var context = new LauncherDbContext();
+
                 var existingUser = context.Users
-                    .FirstOrDefault(u => u.UserId == userEntity.UserId);
+                    .FirstOrDefault(u => u.UserId == viewModel.UserId);
 
                 if (existingUser != null)
                 {
-                    // 기존 사용자 업데이트
-                    existingUser.Name = userEntity.Name;
-                    existingUser.Activated = userEntity.Activated;
-                    existingUser.RoleId = userEntity.RoleId;
+                    // 수정
+                    existingUser.Name = viewModel.UserName;
+                    existingUser.Activated = viewModel.Activated;
+                    existingUser.RoleId = viewModel.RoleId;
+
+                    if (!string.IsNullOrWhiteSpace(viewModel.Pw))
+                    {
+                        existingUser.Pw = viewModel.Pw;
+                    }
                 }
                 else
                 {
-                    // 신규 사용자 등록
-                    context.Users.Add(userEntity);
+                    // 추가
+                    var newUser = new User
+                    {
+                        UserId = viewModel.UserId,
+                        Name = viewModel.UserName,
+                        Pw = viewModel.Pw,
+                        Activated = viewModel.Activated,
+                        RoleId = viewModel.RoleId
+                    };
+                    context.Users.Add(newUser);
                 }
 
                 context.SaveChanges();
@@ -1263,11 +1269,11 @@ namespace MCC_Launcher.Services
         }
 
 
-        public UserPermissionInfo LoadUserPermissions(Models.User user)
+        public UserPermissionInfo LoadUserPermissions(User user)    
         {
             using var db = new LauncherDbContext();
 
-            // 하나의 RoleId만 사용
+            // RoleId로 권한확인하기 
             var permissions = db.RoleProgramPermissions
                 .Where(rpp => rpp.RoleId == user.RoleId)
                 .Select(rpp => new { rpp.ProgramId, rpp.PermissionId })

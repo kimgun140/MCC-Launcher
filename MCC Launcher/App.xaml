@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:MCC_Launcher.Views"
              xmlns:ViewModels="clr-namespace:MCC_Launcher.ViewModels"
              xmlns:Views="clr-namespace:MCC_Launcher.Views"
-             StartupUri="MainWindow.xaml">
+             StartupUri="Mainwindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <FontFamily x:Key="monster_rat">application:,,,/Font/#Montserrat Thin</FontFamily>

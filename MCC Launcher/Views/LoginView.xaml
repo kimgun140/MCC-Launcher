@@ -3,20 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" xmlns:ViewModels="clr-namespace:MCC_Launcher.ViewModels"
+             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+             xmlns:ViewModels="clr-namespace:MCC_Launcher.ViewModels"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="300"
+             d:DesignWidth="300"
              xmlns:vm="clr-namespace:MCC_Launcher.ViewModels"
-             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
-            >
-    
-    
-<UserControl.DataContext>
-    <ViewModels:LoginViewModel/>
-</UserControl.DataContext>
-<dxmvvm:Interaction.Behaviors>
-    <dx:CurrentDialogService />
-</dxmvvm:Interaction.Behaviors>
+             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core">
+
+    <UserControl.DataContext>
+        <ViewModels:LoginViewModel />
+    </UserControl.DataContext>
+    <dxmvvm:Interaction.Behaviors>
+        <dx:CurrentDialogService />
+        <dx:DXMessageBoxService />
+    </dxmvvm:Interaction.Behaviors>
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -26,9 +27,7 @@
 
         <TextBox Grid.Row="0"
                  Margin="0 0 0 10"
-                 
-                 Text="{Binding UserIdInput, UpdateSourceTrigger=PropertyChanged}"
-                 >
+                 Text="{Binding UserIdInput, UpdateSourceTrigger=PropertyChanged}">
             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="KeyDown"
                                        Command="{Binding EnterKeyCommand}"

@@ -12,6 +12,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using DevExpress.Mvvm;
+using MCC_Launcher.ViewModels;
+using static MCC_Launcher.ViewModels.UserEditDialogViewModel;
 
 namespace MCC_Launcher.Views
 {
@@ -23,6 +25,19 @@ namespace MCC_Launcher.Views
         public UserEditDialogView()
         {
             InitializeComponent();
+        }
+
+        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            //if (DataContext is DialogContext context && context.EditedUser != null)
+            //{
+            //    context.EditedUser.Pw = ((PasswordBox)sender).Password;
+            //}
+
+            if (this.DataContext is UserEditDialogViewModel vm && vm._context?.EditedUser != null)
+            {
+                vm._context.EditedUser.Pw = ((PasswordBox)sender).Password;
+            }
         }
     }
 }

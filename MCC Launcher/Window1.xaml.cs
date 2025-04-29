@@ -1,4 +1,5 @@
 ﻿using MCC_Launcher.Models;
+using MCC_Launcher.Views;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,19 +21,43 @@ namespace MCC_Launcher
     /// <summary>
     /// Window1.xaml에 대한 상호 작용 논리
     /// </summary>
-    public partial class Window1 : Window
+    public partial class Window1 : Window 
     {
         public ObservableCollection<ProgramDisplayModel> Programs { get; set; } = new ObservableCollection<ProgramDisplayModel>();
         public UserPermissionInfo LoggedInUserPermissions { get; set; } // 로그인 시 세팅
+
+        public User LoggedInUser { get; set; }
+        public void LoginTest()
+        {
+
+        }
+
+
+        //public User LoggedInUsertest
+        //{
+        //    get => GetValue<User>();
+        //    set
+        //    {
+        //        SetValue(value);
+        //        //IsAdmin();
+        //        //RaisePropertiesChanged(nameof(IsAdminUser));
+        //    }
+
+        //}
 
         public Window1()
         {
             InitializeComponent();
             this.DataContext = this;
+            LoggedInUser = new User {  UserId ="anonymous", RoleId = 13 }; // 예시로 사용자 정보 설정
+
+
+            LoggedInUserPermissions = LoadUserPermissions(LoggedInUser);
+
             LoadProgramList();
         }
         // 프로그램 리스트 불러오기
-        public List<ProgramEntity> LoadProgramsFromDatabase()
+        public List<ProgramEntity> LoadProgramsFromDatabase()//목록 불러오기 
         {
             using var context = new LauncherDbContext();
 
@@ -60,7 +85,7 @@ namespace MCC_Launcher
         //        });
         //    }
         //}
-        public void LoadProgramList()//필터링
+        public void LoadProgramList()//프로그램 필터링 권한 기준  기존 프로그램목록표시에서 변경중 
         {
             Programs.Clear();
 
@@ -72,9 +97,11 @@ namespace MCC_Launcher
                 if (firstVersion == null)
                     continue;
 
-                // 🔥 allowed 필터링 (PermissionId 1=Install, 2=Run 라고 가정)
-                bool hasPermission = LoggedInUserPermissions.Permissions
+                // allowed 필터링 (PermissionId 1=Install, 2=Run 라고 가정)
+                bool hasPermission = LoggedInUserPermissions.Permissions// 이게 0이네 
                     .Any(p => p.ProgramId == program.ProgramId && (p.PermissionId == 1 || p.PermissionId == 2));
+                //테스트라서 1이나 2로만 하는중임 , 그냥 있는지없는지를 확인해야겠다 .
+                // 등록된 프로그램에 아무 권한이나 있으면 목록을 표시해야지 
 
                 if (!hasPermission)
                     continue; // 권한 없으면 추가 안함
@@ -87,7 +114,23 @@ namespace MCC_Launcher
                 });
             }
         }
+        public UserPermissionInfo LoadUserPermissions(User user)
+        {
+            using var db = new LauncherDbContext();
 
+            var permissions = db.RoleProgramPermissions
+                .Where(rpp => rpp.RoleId == user.RoleId)
+                .Select(rpp => new { rpp.ProgramId, rpp.PermissionId })
+                .ToList();
+
+            var info = new UserPermissionInfo();
+            foreach (var p in permissions)
+            {
+                info.Permissions.Add((p.ProgramId, p.PermissionId));
+            }
+
+            return info;
+        }
 
 
 

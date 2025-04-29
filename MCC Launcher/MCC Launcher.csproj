@@ -105,6 +105,7 @@
 
   <ItemGroup>
     <PackageReference Include="DevExpress.Mvvm" Version="22.2.4" />
+    <PackageReference Include="DevExpress.Mvvm.CodeGenerators" Version="22.1.1" />
     <PackageReference Include="DevExpress.Wpf.Core" Version="22.2.4.0" />
     <PackageReference Include="DevExpress.Wpf.Themes.All" Version="22.2.4">
       <GeneratePathProperty>True</GeneratePathProperty>

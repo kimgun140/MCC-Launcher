@@ -153,6 +153,7 @@ namespace MCC_Launcher
     public class UserViewModel
     {// ui바인딩용 
         public string UserId { get; set; }
+        public string Pw { get; set; }
         public string UserName { get; set; }
         public string RoleName { get; set; } // 이걸 UI에 바인딩
         public bool Activated { get; set; } // 이걸 UI에 바인딩

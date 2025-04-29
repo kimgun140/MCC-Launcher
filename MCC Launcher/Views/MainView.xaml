@@ -125,21 +125,28 @@
                                 <Button.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="로그인"
-                                                  Command="{Binding ShowLoginCommand}" />
-                                        <MenuItem Header="권한관리"
+                                                  Command="{Binding ShowLoginCommand}"
+                                                  Visibility="{Binding IsLogged, Converter= {StaticResource boolToVisibilityConverter}}"
+                                                  />
+                                        <!--<MenuItem Header="권한관리"
                                                   Command="{Binding RolePermissionManagementCommand}"
                                                   Visibility="{Binding IsAdminUser, Converter={StaticResource boolToVisibilityConverter} }" />
                                         <MenuItem Header="사용자 관리"
                                                   Command="{Binding ShowUserManagementCommand}"
-                                                  Visibility="{Binding IsAdminUser, Converter={StaticResource boolToVisibilityConverter} }" />
+                                                  Visibility="{Binding IsAdminUser, Converter={StaticResource boolToVisibilityConverter} }" />-->
                                         <MenuItem Header="전체 관리 "
-                                                  Command="{Binding RoleManagementCommand}" />
+                                                  Command="{Binding RoleManagementCommand}"
+                                                 Visibility="{Binding IsAdminUser, Converter={StaticResource boolToVisibilityConverter}}"
+                                                  />
                                         <MenuItem 
                                             Header="등록"
                                                   Command="{Binding RegisterCommand}"
+                                            Visibility="{Binding IsAdminUser, Converter={StaticResource boolToVisibilityConverter}}"
                                             />
                                         <MenuItem Header="로그아웃"
-                                                  Command="{Binding LogoutCommand}" />
+                                                  Command="{Binding LogoutCommand}"
+                                                  Visibility="{Binding LogOutButton, Converter={StaticResource boolToVisibilityConverter}}"
+                                                  />
                                     </ContextMenu>
                                 </Button.ContextMenu>
                             </Button>
