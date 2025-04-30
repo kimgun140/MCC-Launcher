@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,30 +19,29 @@ namespace MCC_Launcher.Models
         public string IconPath { get; set; }        // 아이콘 파일 경로
         public string SmbSourcePath { get; set; }
 
+        [NotMapped]
+        public ImageSource IconSource //이렇게하면 ef에 데이터베이스에 등록이 되야할텐데 
+        {
+     
+            get
+            {
+                if (string.IsNullOrEmpty(IconPath))
+                    return null;
+                try
+                {
+                    var img = Path.Combine(SmbSourcePath, ProgramName, IconPath);
+                    return new BitmapImage(new Uri(img, UriKind.Absolute));
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
 
         public ICollection<ProgramVersionEntity> Versions { get; set; }
         public ICollection<RoleProgramPermission> RoleProgramPermissions { get; set; }
 
-        //public bool AllowAnonymousRun { get; set; }
-        //public bool AllowAnonymousInstall { get; set; }
-
-
-
-        //public int ProgramCode { get; set; }  // 고유 ID
-        //public string Name { get; set; }
-        //public string Description { get; set; }
-        //public string IconPath { get; set; }
-
-        //public virtual ICollection<ProgramVersionEntity> Versions { get; set; }
-
-        //public int ProgramId { get; set; }
-        //public string ProgramName { get; set; }
-
-        //public string Description { get; set; }
-        //public string SmbSourcePath { get; set; }
-
-        //public ICollection<RoleProgramPermission> RoleProgramPermissions { get; set; }
-        //public ICollection<ProgramVersionEntity> Versions { get; set; }
 
     }
     public class ProgramDisplayModel

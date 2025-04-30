@@ -134,7 +134,7 @@ namespace MCC_Launcher.Services
                     var versionEntity = new ProgramVersionEntity
                     {
                         VersionName = viewModel.VersionName,
-                        SmbSourcePath = Path.Combine(viewModel.SmbSourcePath, viewModel.VersionName),
+                        SmbSourcePath = Path.Combine(viewModel.SmbSourcePath,viewModel.ProgramName, viewModel.VersionName),
                         InstallPath = viewModel.InstallPath,
                         MainExecutable = viewModel.MainExecutable,
                         PatchNote = viewModel.PatchNote

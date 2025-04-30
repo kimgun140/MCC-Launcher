@@ -70,7 +70,7 @@
                                    Background="#0D0D0D">
                             <ScrollViewer VerticalScrollBarVisibility="Disabled"
                                           HorizontalScrollBarVisibility="Hidden">
-                                <ItemsControl ItemsSource="{Binding Programs}">
+                                <ItemsControl ItemsSource="{Binding ProgramsEntity}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <StackPanel Orientation="Horizontal" />
@@ -167,7 +167,7 @@
                                         AlignmentX="Left" />
                         </DockPanel.Background>
                         <TextBlock DockPanel.Dock="Top"
-                                   Text="{Binding SelectedProgram.ProgramName }"
+                                   Text="{Binding SelectedProgram1.ProgramName }"
                                    FontFamily="{StaticResource NotoSans}"
                                    FontWeight="Bold"
                                    FontSize="28"
@@ -183,7 +183,7 @@
                                           VerticalScrollBarVisibility="Hidden"
                                           MaxHeight="120">
                                 <TextBlock DockPanel.Dock="Top"
-                                           Text="{Binding SelectedProgram.Description }"
+                                           Text="{Binding SelectedProgram1.Description }"
                                            FontFamily="{StaticResource NotoSans_Regular}"
                                            FontWeight="DemiBold"
                                            TextWrapping="Wrap"
@@ -260,8 +260,8 @@
 
                         <ComboBox Grid.Row="0"
                                   HorizontalAlignment="Stretch"
-                                  ItemsSource="{Binding SelectedProgram.Versions}"
-                                  SelectedItem="{Binding SelectedVersion}"
+                                  ItemsSource="{Binding SelectedProgram1.Versions}"
+                                  SelectedItem="{Binding SelectedVersion1}"
                                   DockPanel.Dock="Bottom"
                                   Height="30"
                                   VerticalAlignment="Bottom"
@@ -269,7 +269,7 @@
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Number}" />
+                                        <TextBlock Text="{Binding VersionName}" />
                                         <!--<TextBlock Text=" (설치됨)"
                                                    Foreground="Green"
                                                    Visibility="{Binding SelectedVersion.isInstalled, Converter={StaticResource boolToVisibilityConverter}}" />-->

@@ -261,6 +261,8 @@ namespace MCC_Launcher.Services
 
 
         }
+
+
         public void OptionExport(string programFolder, string versionPath)
         {
             // 설정 파일 이름
@@ -406,6 +408,7 @@ namespace MCC_Launcher.Services
 
             return Path.Combine(installedPath, programFolderName, versionFolderName);
         }
+
         public string GetInstalledProgramFolderPath(string programFolder)
         {
             string programFolderName = Path.GetFileName(programFolder);
@@ -1136,7 +1139,7 @@ namespace MCC_Launcher.Services
                     RoleId = selectedRole.RoleId,
                     ProgramId = selectedProgram.ProgramId,
                     PermissionId = permission.PermissionId,
-                    
+
                     //VersionId = null // null로 설정
                 });
             }
@@ -1269,7 +1272,7 @@ namespace MCC_Launcher.Services
         }
 
 
-        public UserPermissionInfo LoadUserPermissions(User user)    
+        public UserPermissionInfo LoadUserPermissions(User user)
         {
             using var db = new LauncherDbContext();
 

@@ -36,9 +36,9 @@
                        Margin="0,5" />
             <TextBox Text="{Binding SmbSourcePath}" />
 
-            <!--<TextBlock Text="설치 경로"
+            <TextBlock Text="설치 경로"
                        Margin="0,5" />
-            <TextBox Text="{Binding InstallPath}" />-->
+            <TextBox Text="{Binding InstallPath}" />
 
             <TextBlock Text="메인 실행파일명"
                        Margin="0,5" />

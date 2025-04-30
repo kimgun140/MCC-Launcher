@@ -36,7 +36,14 @@ namespace MCC_Launcher.ViewModels
         //public string programsRootFolder = @"\\Gms-mcc-nas01\audio-file\test1\programs";// xml db 이전용 
 
 
+      private readonly RealLauncherService ReallauncherService = new RealLauncherService();
+
+
         private readonly LauncherService launcherService = new LauncherService();
+
+
+
+
         public IDialogService LoginDialogService => this.GetService<IDialogService>("LoginDialog");
         public IDialogService RolePermissionManagementDialogService => this.GetService<IDialogService>("RolePermissionManagementDialog");
         public IDialogService UserManagementDialogService => this.GetService<IDialogService>("UserManagementDialog");
@@ -44,27 +51,45 @@ namespace MCC_Launcher.ViewModels
 
 
 
+
+
+
         protected ICurrentDialogService CurrentDialogService { get { return GetService<ICurrentDialogService>(); } }
 
 
         public ObservableCollection<Program> Programs { get; set; } = new ObservableCollection<Program>();
+
+
+        //public UserPermissionInfo LoggedInUserPermissions { get; set; } // 로그인 시 세팅
         public UserPermissionInfo userPermissionInfo { get; set; }
-
-
         public ObservableCollection<ProgramEntity> ProgramsEntity { get; set; } = new ObservableCollection<ProgramEntity>();
 
-        public ProgramEntity SelectedProgramtest
+        public ProgramEntity SelectedProgram1
         {
 
             get => GetValue<ProgramEntity>();
-            set => SetValue(value);
+            set
+            {
+                SetValue(value);
+                PatchNote = null;
+                RaisePropertiesChanged(nameof(PatchNote));
+                AllPatchNotes();
+            }
 
         }
         public ObservableCollection<ProgramVersionEntity> Versions { get; set; } = new();
-        public ProgramVersionEntity SelectedVersion1 {
-            
-            get => GetValue<ProgramVersionEntity>(); 
-            set => SetValue(value);
+        public ProgramVersionEntity SelectedVersion1
+        {
+
+            get => GetValue<ProgramVersionEntity>();
+            set
+            {
+                SetValue(value);
+                InstallOrRun();
+
+
+            }
+
         }
 
 
@@ -101,7 +126,7 @@ namespace MCC_Launcher.ViewModels
         }
         public void LoginButtonCheck()
         {
-            if (LoggedInUser.Role.RoleName == "Anonymous")
+            if (LoggedInUser.Role.RoleName == "anonymous")
             {
                 IsLogged = true;
                 LogOutButton = false;
@@ -158,13 +183,7 @@ namespace MCC_Launcher.ViewModels
             set => SetValue(value);
 
         }
-        public ProgramDisplayModel SelectedProgram123
-        {
-            get => GetValue<ProgramDisplayModel>();
 
-            set => SetValue(value);
-
-        }
         public string PatchNote
         {
             get { return GetValue<string>(); }
@@ -179,7 +198,7 @@ namespace MCC_Launcher.ViewModels
             {
                 SetValue(value, changedCallback: InstallOrRun);
                 RaisePropertiesChanged(nameof(PatchNote));
-
+                
             }
 
         }
@@ -195,12 +214,12 @@ namespace MCC_Launcher.ViewModels
             set => SetValue(value);
 
         }
-        public ObservableCollection<string> PatchNotes
-        {
-            get => GetValue<ObservableCollection<string>>();
-            set => SetValue(value);
-        }
-
+        //public ObservableCollection<string> PatchNotes
+        //{
+        //    get => GetValue<ObservableCollection<string>>();
+        //    set => SetValue(value);
+        //}
+        public ObservableCollection<string> PatchNotes { get; set; } = new ObservableCollection<string>();
 
 
         IMessageBoxService MessageBoxService { get { return GetService<IMessageBoxService>(); } }
@@ -215,8 +234,8 @@ namespace MCC_Launcher.ViewModels
         public DelegateCommand RepairProgramCommand { get; set; }
         public DelegateCommand backupCommand { get; set; }
         public DelegateCommand OptionsImportCommand { get; set; }
-        public DelegateCommand OptionCompatibleCommand { get; set; }
-        public DelegateCommand LoadPatchNotesCommand { get; set; }
+        //public DelegateCommand OptionCompatibleCommand { get; set; }
+        //public DelegateCommand LoadPatchNotesCommand { get; set; }
 
         public DelegateCommand LoadVersionsCommand { get; set; }
 
@@ -232,18 +251,32 @@ namespace MCC_Launcher.ViewModels
 
             IsAdmin();
             launcherService.Connection();
-            LoadPrograms();
-            SelectedProgramCommand = new DelegateCommand<object>(SetSeletedProgram);
-            LaunchProgramCommand = new DelegateCommand(LaunchSelectedVersion);
-            DeleteProgramCommand = new DelegateCommand(DeleteProgram);
+            //LoadPrograms();// 목록 불러오기 
+            LoadProgramList2();
+
+            //SelectedProgramCommand = new DelegateCommand<object>(SetSeletedProgram);
+            SelectedProgramCommand = new DelegateCommand<object>(SetSeletedProgram1);
+
+
+
+            //LaunchProgramCommand = new DelegateCommand(LaunchSelectedVersion);
+            LaunchProgramCommand = new DelegateCommand(LaunchSelectedVersion22222);
+
+
+            //DeleteProgramCommand = new DelegateCommand(DeleteProgram);
+            DeleteProgramCommand = new DelegateCommand(DeleteProgram1);
+
             RepairProgramCommand = new DelegateCommand(RepairProgram);
-            backupCommand = new DelegateCommand(OptionExport);
+            //backupCommand = new DelegateCommand(OptionExport);
+            backupCommand = new DelegateCommand(OptionExport1);
+
+
             OptionsImportCommand = new DelegateCommand(OptionImport);
             LoadVersionsCommand = new DelegateCommand(LoadBackupOption);
             LogoutCommand = new DelegateCommand(Logout);
 
             ShowLoginCommand = new DelegateCommand(OpenLoginDialog);
-            RegisterCommand = new DelegateCommand(register);
+            RegisterCommand = new DelegateCommand(RegisterDialogShow);
 
             //CancelCommand = new DelegateCommand(Cancel);
 
@@ -260,26 +293,34 @@ namespace MCC_Launcher.ViewModels
         private void SetSeletedProgram(object param)
         {
             //
-            if (param is Program seleted)
+            if (param is ProgramEntity seleted)
             {
-                SelectedProgram = seleted;
+                SelectedProgram1 = seleted;
 
             }
-            //여기에서 프로그램 코드 넣기 
+            InstallOrRun();
+
+
+            //여기에서 프로그램 코드 넣기
             var dbProgram = launcherService.GetProgramByName(SelectedProgram.ProgramName);
             if (dbProgram != null)
             {
                 SelectedProgram.ProgramId = dbProgram.ProgramId;
-                // 필요한 경우 AllowAnonymousInstall, AllowAnonymousRun도 함께 복사
-                //SelectedVersion.AllowAnonymousInstall = dbProgram.AllowAnonymousInstall;
-                //SelectedVersion.AllowAnonymousRun = dbProgram.AllowAnonymousRun;
             }
 
             PatchNote = null;
             RaisePropertiesChanged(nameof(PatchNote));
             AllPatchNotes();
-            //Messenger.Default.Send("ScrollToTop", "ScrollToTop");
 
+        }
+        private void SetSeletedProgram1(object param)
+        {
+            //
+            if (param is ProgramEntity seleted)
+            {
+                SelectedProgram1 = seleted;
+            }
+            InstallOrRun();
         }
 
         private async void LaunchSelectedVersion()
@@ -330,6 +371,7 @@ namespace MCC_Launcher.ViewModels
                         var FolderPath = launcherService.GetInstalledProgramFolderPath(SelectedProgram.FolderPath);
                         launcherService.SaveLastUsedVersion(FolderPath, versionname);//최근 실행 버전 기록 
 
+
                         var token = GenerateToken();
                         launcherService.RunProgram(SelectedProgram.FolderPath, SelectedVersion.Path, SelectedVersion.MainExecutable, token);
                     }
@@ -363,7 +405,76 @@ namespace MCC_Launcher.ViewModels
                 MessageBox.Show("parmeter path2= 실행파일 이없음 ", e.Message);
             }
         }
+        private async void LaunchSelectedVersion22222()
+        //
+        {
+            //계정이 권한이 부여된 역할을 가지고 있는 지 확인 전역적인 기능만 사용 
+            try
+            {
+                // 프로그램을 비교하려면 해당 프로그램 이름이랑 비교를 해야겠네 이름 가져오고 그거랑 비교하기 
+                if (!LoggedInUser.Activated)
+                {// actived 확인 
 
+                    MessageBoxService.Show("이용 기간이 만료되었습니다. 이용기간을 연장해주세요 ");
+                    return;
+                }
+
+                if (SelectedVersion1 == null)
+                    return;
+
+              var  isInstalled = ReallauncherService.IsProgramInstalled2(SelectedVersion1.InstallPath, SelectedProgram1.ProgramName, SelectedVersion1.VersionName);// 폴더 존재확인 실행 파일 유무로 확인하는게 나을듯 
+
+
+                // 실행 조건
+                if (isInstalled )//설치 
+                {
+                    var result = MessageBoxService.Show($"{SelectedProgram1.ProgramName} 프로그램을 실행합니다.", "실행", MessageBoxButton.OK);
+                    if (result == MessageBoxResult.OK)
+                    {
+                        //var versionname = Path.GetFileName(SelectedVersion.Path);
+                        //var FolderPath = launcherService.GetInstalledProgramFolderPath(SelectedProgram.FolderPath);
+                        //launcherService.SaveLastUsedVersion(FolderPath, versionname);//최근 실행 버전 기록 
+
+
+                        //var token = GenerateToken();
+                        //launcherService.RunProgram(SelectedProgram.FolderPath, SelectedVersion.Path, SelectedVersion.MainExecutable, token);
+                        ReallauncherService.RunProgram1(SelectedProgram1, SelectedVersion1);
+
+                    }
+
+                    return;
+                }
+
+                // 설치 조건
+                if (!isInstalled ) // 미설치 
+                {
+                    var result = MessageBoxService.Show($"{SelectedProgram1.ProgramName} 프로그램을 설치하시겠습니까?", "설치", MessageBoxButton.YesNo);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        var progress = new Progress<int>(value => ProgressBarValue = value);
+                        //await launcherService.InstallProgram(progress, SelectedVersion.Path, SelectedProgram.FolderPath, SetProgressBarVisibility);
+                        await ReallauncherService.ProgramSetupAsync(progress, SelectedProgram1, SelectedVersion1,  SetProgressBarVisibility);
+
+                        //InstallProgram(SelectedProgram2, SelectedVersion1);
+
+
+                        //InstallProgram( );
+                        InstallOrRun(); // UI 버튼 업데이트
+                    }
+
+                    return;
+                }
+
+                // 둘 다 불가능한 경우
+                MessageBoxService.Show("설치 또는 실행 권한이 없습니다.", "권한 부족", MessageBoxButton.OK, MessageBoxImage.Warning);
+                InstallOrRun(); // UI 버튼 업데이트
+
+            }
+            catch (Exception e)
+            {
+                MessageBoxService.Show($"{SelectedVersion1.MainExecutable} 실행파일을 찾을 수 없습니다. ", e.Message);
+            }
+        }
 
 
         private void SetProgressBarVisibility(bool isVisible)
@@ -389,39 +500,43 @@ namespace MCC_Launcher.ViewModels
         private void InstallOrRun()
         //버전선택할때 동작 
         {
-            if (SelectedVersion == null)
+            if (SelectedVersion1 == null)
             {
                 // SelectedVersion이 null인 경우 처리 처음 선택되지않은 순간
                 ButtonContent = "설치";
                 return;
             }
 
-            bool isInstalled = launcherService.IsProgramInstalled(SelectedProgram.FolderPath, SelectedVersion.Path);
-            SelectedVersion = launcherService.LoadMetaData(SelectedVersion.Path, SelectedVersion);// 여기서 메타데이터 왜보는거지? 
+            //bool isInstalled = launcherService.IsProgramInstalled(SelectedProgram.FolderPath, SelectedVersion.Path);
+            //SelectedVersion = launcherService.LoadMetaData(SelectedVersion.Path, SelectedVersion);// 여기서 메타데이터 왜보는거지? 
+            RealLauncherService ReallauncherService = new RealLauncherService();
+            bool isInstalled = ReallauncherService.IsProgramInstalled2(SelectedVersion1.InstallPath, SelectedProgram1.ProgramName, SelectedVersion1.VersionName);
 
-            PatchNote = SelectedVersion.PatchNote;
+            PatchNote = SelectedVersion1.PatchNote;
 
             Flag = isInstalled;
+            // 설치되었는지 검사하는 메서드 만들기 
             ButtonContent = Flag ? "실행" : "설치";
 
         }
 
         private void AllPatchNotes()
         {
-
-            if (SelectedProgram == null)
+            //PatchNotes = null;
+            PatchNotes.Clear();
+            if (SelectedProgram1 == null)
                 return;
 
-            var versioninfo = launcherService.AllPatchNotes(SelectedProgram.FolderPath);
+            //var versioninfo = launcherService.AllPatchNotes(SelectedProgram.FolderPath);
             // version에 각각 들어 있는데 이걸 각각 표시 해주는게 programs에 들어있는 것들이니까 
 
-            foreach (var version in SelectedProgram.Versions)
+            foreach (var version in SelectedProgram1.Versions)
             {
-                string installFolder = Path.Combine(SelectedProgram.FolderPath, version.Path);
-                version.isInstalled = Directory.Exists(installFolder);
+                PatchNotes.Add(version.PatchNote);
+
             }
 
-            PatchNotes = versioninfo.PatchNotes;
+
 
         }
         public void DeleteProgram()
@@ -684,6 +799,7 @@ namespace MCC_Launcher.ViewModels
 
                 LoggedInUser = resultContext.AuthenticatedUser;
                 ProgramsListLoad();
+                LoadProgramList2();// 목록 로드 
                 // 이후 프로그램 실행/설치 등 권한 확인 가능
             }
 
@@ -743,20 +859,23 @@ namespace MCC_Launcher.ViewModels
         }
         public User CreateAnonymousUser()
         {
+
             using var context = new LauncherDbContext();
 
-            var anonymousRole = context.Roles.FirstOrDefault(r => r.RoleName == "Anonymous");
+            var anonymousRole = context.Roles.FirstOrDefault(r => r.RoleName == "anonymous");
             if (anonymousRole == null)
                 throw new InvalidOperationException("Anonymous 역할이 존재하지 않습니다.");
             //디비에서 비로그인 역할을 지웠을때 오류 
 
-            return LoggedInUser = new User
+            LoggedInUser = new User
             {
-                UserId = "Anonymous",
+                UserId = "anonymous",
                 Activated = true,
                 RoleId = anonymousRole.RoleId,
                 Role = anonymousRole
             };
+            ProgramsListLoad();
+            return LoggedInUser;
         }
 
         public void RolePermissionManagementDialog()
@@ -882,7 +1001,7 @@ namespace MCC_Launcher.ViewModels
                 .Include(p => p.Versions)
                 .ToList();
         }
-        public void register()//이 함수를 옮겨서 작업하면 되겠네 
+        public void RegisterDialogShow()//이 함수를 옮겨서 작업하면 되겠네 
         {
             var result = ProgramRegistraionDialogService.ShowDialog(
                                 dialogCommands: null,
@@ -928,8 +1047,79 @@ namespace MCC_Launcher.ViewModels
                 return false;
             }
         }
-        public void asdf(object param)
+        public void LoadProgramList2()// 이거들어갈 타이밍이 로그인한 다음 이어야한다. 
         {
+            ProgramsEntity.Clear();
+
+            var programList = LoadProgramsFromDatabase();
+
+            foreach (var program in programList)
+            {
+                var firstVersion = program.Versions.FirstOrDefault();
+                if (firstVersion == null)
+                    continue;
+
+                // 권한 체크
+                bool hasPermission = userPermissionInfo.Permissions
+                    .Any(p => p.ProgramId == program.ProgramId);
+
+                if (!hasPermission)
+                    continue;
+
+                ProgramsEntity.Add(program); // 
+            }
+            InstallOrRun();
+        }
+        public void DeleteProgram1()
+        // 삭제
+        {
+            if (SelectedProgram1 == null || SelectedVersion1 == null)
+                return;
+            //MessageBox.Show("프로그램 삭제");
+            var result = MessageBoxService.ShowMessage(
+                         messageBoxText: $"{SelectedProgram1.ProgramName}프로그램 {SelectedVersion1.VersionName}을 삭제하시겠습니까 .",
+                         caption: "삭제",
+                         button: MessageButton.YesNoCancel,
+                         icon: MessageIcon.Question);
+            //옵션 백업할건지 물어보기 
+            if (result == MessageResult.Yes)
+            {
+                var InstallPath = Path.Combine(SelectedVersion1.InstallPath, SelectedProgram1.ProgramName);
+
+                //string fullInstallPath = launcherService.GetInstalledversionPath(SelectedProgram.FolderPath, SelectedVersion.Path);
+                //프로그램 이름, 버전이름으로 설치된 폴더 경로 만들기 
+
+                //옵션 백업 물어보기 
+
+                //OptionExport();
+
+                ReallauncherService.deleteDirectory(InstallPath);
+                InstallOrRun();
+            }
+
+        }
+        private void OptionExport1()// 사용 
+        {
+            if (SelectedProgram1 == null || SelectedVersion1 == null)
+            {
+                return;
+            }
+            //
+            //MessageBox.Show("설정 백업");
+            var result = MessageBoxService.Show(
+                          messageBoxText: $"{SelectedProgram1.ProgramName},{SelectedVersion1.VersionName}옵션을 백업하시겠습니까?.",
+                          caption: "옵션 백업",
+                          button: MessageBoxButton.YesNo,
+                          MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                //fileCopyManager.OptionFolderBackup(SelectedProgram.FolderPath, SelectedVersion.Path);
+                ReallauncherService.OptionExport(SelectedProgram1, SelectedVersion1);
+
+
+            }
+
 
         }
 
