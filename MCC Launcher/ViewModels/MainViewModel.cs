@@ -234,6 +234,7 @@ namespace MCC_Launcher.ViewModels
         public DelegateCommand RepairProgramCommand { get; set; }
         public DelegateCommand backupCommand { get; set; }
         public DelegateCommand OptionsImportCommand { get; set; }
+
         //public DelegateCommand OptionCompatibleCommand { get; set; }
         //public DelegateCommand LoadPatchNotesCommand { get; set; }
 
@@ -271,7 +272,9 @@ namespace MCC_Launcher.ViewModels
             backupCommand = new DelegateCommand(OptionExport1);
 
 
-            OptionsImportCommand = new DelegateCommand(OptionImport);
+            //OptionsImportCommand = new DelegateCommand(OptionImport);
+            OptionsImportCommand = new DelegateCommand(OptionImport1);
+
             LoadVersionsCommand = new DelegateCommand(LoadBackupOption);
             LogoutCommand = new DelegateCommand(Logout);
 
@@ -708,70 +711,6 @@ namespace MCC_Launcher.ViewModels
 
         }
 
-        //public void InsertData()
-        //{
-        //    using (var context = new LauncherDbContext())
-        //    {
-        //        // Roles
-        //        var adminRole = new Role { RoleId = 1, RoleName = "Admin" };
-        //        var userRole = new Role { RoleId = 2, RoleName = "User" };
-
-        //        // Permissions
-        //        var installPermission = new Permission { PermissionID = 1, PermissionName = "Install" };
-        //        var executePermission = new Permission { PermissionID = 2, PermissionName = "Execute" };
-
-        //        // Programs
-        //        var programs = new List<ProgramEntity>
-        //{
-        //    new ProgramEntity { ProgramCode = 1, Name = "AudioServer" },
-        //    new ProgramEntity { ProgramCode = 2, Name = "ProgramA" },
-        //    new ProgramEntity { ProgramCode = 3, Name = "ProgramB" },
-        //    new ProgramEntity { ProgramCode = 4, Name = "ProgramC" },
-        //    new ProgramEntity { ProgramCode = 5, Name = "ProgramD" },
-        //    new ProgramEntity { ProgramCode = 6, Name = "ProgramE" },
-        //    new ProgramEntity { ProgramCode = 7, Name = "ProgramG" },
-        //};
-
-        //        // Program Versions
-        //        var programVersions = new List<ProgramVersionEntity>
-        //{
-        //    new ProgramVersionEntity { VersionId = 1, VersionName = "v1.0.0", ProgramCode = 1 },
-        //    new ProgramVersionEntity { VersionId = 2, VersionName = "v1.1.0", ProgramCode = 1 },
-        //    new ProgramVersionEntity { VersionId = 3, VersionName = "v2.0.0", ProgramCode = 2 },
-        //};
-
-        //        // Users
-        //        var adminUser = new User { UserId = "admin", Name = "관리자", Password = "admin123", Activated = true };
-        //        var guestUser = new User { UserId = "guest", Name = "일반사용자", Password = "guest123", Activated = true };
-
-        //        // Role Mappings
-        //        var userRoles = new List<UserRole>
-        //{
-        //    new UserRole { UserId = "admin", RoleId = 1 },
-        //    new UserRole { UserId = "guest", RoleId = 2 },
-        //};
-
-        //        var rolePermissions = new List<RolePermission>
-        //{
-        //    new RolePermission { RoleId = 1, PermissionID = 1 }, // Admin - Install
-        //    new RolePermission { RoleId = 1, PermissionID = 2 }, // Admin - Execute
-        //    new RolePermission { RoleId = 2, PermissionID = 2 }, // User - Execute only
-        //};
-
-        //        // Insert
-        //        context.Roles.AddRange(adminRole, userRole);
-        //        context.Permissions.AddRange(installPermission, executePermission);
-        //        context.Programs.AddRange(programs);
-        //        context.ProgramVersion.AddRange(programVersions);
-        //        context.Users.AddRange(adminUser, guestUser);
-        //        context.UserRoles.AddRange(userRoles);
-        //        context.RolePermissions.AddRange(rolePermissions);
-
-        //        context.SaveChanges();
-
-        //    }
-        //}//더미데이터넣기
-
 
         private void OpenLoginDialog()
         {
@@ -828,6 +767,7 @@ namespace MCC_Launcher.ViewModels
             // 로그아웃 처리
             CreateAnonymousUser();
             MessageBoxService.Show("로그아웃 되었습니다.");
+            LoadProgramList2();
             //MessageBox.Show("로그아웃 되었습니다.", "로그아웃", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -921,67 +861,6 @@ namespace MCC_Launcher.ViewModels
 
         }
 
-
-
-
-
-        //public static List<ProgramEntity> LoadProgramsFromDirectory(string programsRootFolder)
-        //{
-        //    var result = new List<ProgramEntity>();
-
-        //    if (!Directory.Exists(programsRootFolder))
-        //        return result;
-
-        //    var programDirs = Directory.GetDirectories(programsRootFolder); // 예: AudioServer, ProgramA...
-
-        //    foreach (var programDir in programDirs)
-        //    {
-        //        string programXmlPath = Path.Combine(programDir, "Program.xml");
-
-        //        if (!File.Exists(programXmlPath))
-        //            continue;
-
-        //        XDocument doc = XDocument.Load(programXmlPath);
-        //        var programElement = doc.Element("Program");
-        //        if (programElement == null)
-        //            continue;
-
-        //        var name = programElement.Element("Name")?.Value ?? "";
-        //        var description = programElement.Element("Description")?.Value ?? "";
-        //        var icon = programElement.Element("Icon")?.Value ?? "";
-
-        //        var versions = new List<ProgramVersionEntity>();
-        //        var versionElements = programElement.Element("Versions")?.Elements("Version") ?? Enumerable.Empty<XElement>();
-
-        //        foreach (var versionElement in versionElements)
-        //        {
-        //            var versionName = versionElement.Element("Number")?.Value ?? "";
-        //            var smbPath = versionElement.Element("Path")?.Value ?? "";
-
-        //            versions.Add(new ProgramVersionEntity
-        //            {
-        //                VersionName = versionName,
-        //                SmbSourcePath = smbPath,
-        //                InstallPath = "",
-        //                MainExecutable = "",
-        //                PatchNote = ""
-        //            });
-        //        }
-
-        //        var programEntity = new ProgramEntity
-        //        {
-        //            ProgramName = name,
-        //            //Description = description,
-        //            //IconPath = icon,
-        //            //Versions = versions
-        //        };
-
-        //        result.Add(programEntity);
-        //    }
-
-        //    return result;
-        //}
-
         public void LoadProgramList()
         {
             Programs.Clear();
@@ -993,7 +872,7 @@ namespace MCC_Launcher.ViewModels
                 ProgramsEntity.Add(program);
             }
         }
-        public List<ProgramEntity> LoadProgramsFromDatabase()
+        public List<ProgramEntity> LoadProgramsFromDatabase()//등록된 프로그램 리스트로드 
         {
             using var context = new LauncherDbContext();
 
@@ -1001,7 +880,7 @@ namespace MCC_Launcher.ViewModels
                 .Include(p => p.Versions)
                 .ToList();
         }
-        public void RegisterDialogShow()//이 함수를 옮겨서 작업하면 되겠네 
+        public void RegisterDialogShow()//등록다이얼로그 
         {
             var result = ProgramRegistraionDialogService.ShowDialog(
                                 dialogCommands: null,
@@ -1121,6 +1000,61 @@ namespace MCC_Launcher.ViewModels
             }
 
 
+        }
+
+        private void OptionImport1()
+        {//호환성체크 
+            //설치 프로그램 폴더
+            //string installedPath = launcherService.GetInstalledProgramFolderPath(SelectedProgram.FolderPath);
+            // 버전 선택안하면 에러
+            string fileversionname = SelectedVersion1.VersionName;// 현재 선택한 버전 
+
+            var record = ReallauncherService.LatestRunVersionRecord(SelectedProgram1, SelectedVersion1);
+            string installPath = Path.Combine(SelectedVersion1.InstallPath, SelectedProgram1.ProgramName);//설치 경로 
+            if (record == null)
+            // 선택안했을때 null  
+            {
+                return;
+
+            }
+            var backupOption = record;
+            string selectedVersion = SelectedVersion1.VersionName;
+
+            if (backupOption.CurrentVersion != selectedVersion)// 같은버전의 옵션파일일때 
+            {
+                var result = MessageBoxService.Show(
+                    "선택한 옵션을 적용하시겠습니까?\n기존 옵션에 덮어쓰기 됩니다.",
+                    "옵션 마이그레이션",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    var defs = ReallauncherService.LoadCompatibility(SelectedProgram1, SelectedVersion1);// 스키마 파일 읽기
+                    var newOption = launcherService.ConvertUserOption(backupOption, defs, fileversionname);// 호환성 맞추기
+                    ReallauncherService.SaveUpdatedUserOption(SelectedProgram1, SelectedVersion1, newOption);//파일로 쓰기
+
+                    //MessageBoxService.Show($"{selectedVersion}이 {backupOption.CurrentVersion}로 마이그레이션 됐습니다.");
+                    MessageBoxService.Show($" {backupOption.CurrentVersion}로 옵션이 적용되었습니다.");// 옵션파일 이름으로 하는게 나을듯 
+
+                }
+            }
+            else
+            {
+                var result = MessageBoxService.Show(
+                    "선택한 버전과 동일한 버전의 옵션파일입니다. 덮어쓰기 하겠습니까?",
+                    "옵션 덮어쓰기",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    var defs = launcherService.LoadCompatibility(SelectedProgram.FolderPath, SelectedVersion.Path);
+                    var newOption = launcherService.ConvertUserOption(backupOption, defs, fileversionname);
+                    launcherService.SaveUpdatedUserOption(installPath, SelectedProgram.ProgramName, fileversionname, newOption);
+                    // 버전폴더안에 위치 
+                }
+            }
         }
 
     }

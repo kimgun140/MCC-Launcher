@@ -226,17 +226,20 @@
                                     Background="#0074E0"
                                     Foreground="White"
                                     VerticalAlignment="Bottom">
-                                <Button.ContextMenu>
-                                    <ContextMenu>
+                                <Button.ContextMenu >
+                                    <ContextMenu   Visibility="{Binding Flag, Converter= {StaticResource boolToVisibilityConverter}}">
                                         <MenuItem Header="삭제"
                                                   Command="{Binding DeleteProgramCommand}"
-                                                  IsEnabled="{Binding Flag}" />
+                                                  Visibility="{Binding Flag, Converter= {StaticResource boolToVisibilityConverter}}" />
                                         <MenuItem Header="리페어"
-                                                  Command="{Binding RepairProgramCommand}" />
+                                                  Command="{Binding RepairProgramCommand}"
+                                                  Visibility="{Binding Flag, Converter= {StaticResource boolToVisibilityConverter}}" />
                                         <MenuItem Header="옵션Export"
-                                                  Command="{Binding backupCommand}" />
+                                                  Command="{Binding backupCommand}" 
+                                                  Visibility="{Binding Flag, Converter= {StaticResource boolToVisibilityConverter}}"/>
                                         <MenuItem Header="옵션Import"
-                                                  Command="{Binding OptionsImportCommand}" />
+                                                  Command="{Binding OptionsImportCommand}"
+                                                  Visibility="{Binding Flag, Converter= {StaticResource boolToVisibilityConverter}}"/>
                                         <!--<MenuItem Header="versionsload"
                                                   Command="{Binding LoadVersionsCommand}" />-->
                                     </ContextMenu>

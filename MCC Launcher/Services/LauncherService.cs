@@ -563,7 +563,7 @@ namespace MCC_Launcher.Services
 
 
         public UserOption? LatestRunVersionRecord(string programFolder, string versionPath)
-        // 가장 최근 버전 확인  빼 제발 
+        // 
         {
 
             const string file = "ProgramSettings.xml";
