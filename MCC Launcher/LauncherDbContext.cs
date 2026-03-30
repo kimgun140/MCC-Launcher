@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -45,7 +46,9 @@ namespace MCC_Launcher
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=launcherdb;Username=postgres;Password=1234")
+            var connectionString = GetConnectionString();
+
+            optionsBuilder.UseNpgsql(connectionString)
                 .EnableSensitiveDataLogging().LogTo(msg =>
                 {
                     if (!string.IsNullOrEmpty(msg))
@@ -56,6 +59,24 @@ namespace MCC_Launcher
 
                     }
                 }, Microsoft.Extensions.Logging.LogLevel.Information);//로그필터 
+        }
+
+        private static string GetConnectionString()
+        {
+            var environmentConnectionString = Environment.GetEnvironmentVariable("MCC_LAUNCHER_DB_CONNECTION");
+            if (!string.IsNullOrWhiteSpace(environmentConnectionString))
+            {
+                return environmentConnectionString;
+            }
+
+            var configuredConnectionString = ConfigurationManager.ConnectionStrings["LauncherDb"]?.ConnectionString;
+            if (!string.IsNullOrWhiteSpace(configuredConnectionString))
+            {
+                return configuredConnectionString;
+            }
+
+            throw new InvalidOperationException(
+                "Database connection string is not configured. Set connectionStrings['LauncherDb'] in App.config or MCC_LAUNCHER_DB_CONNECTION.");
         }
 
         //    protected override void OnModelCreating(ModelBuilder modelBuilder)
