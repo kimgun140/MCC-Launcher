@@ -35,6 +35,13 @@
     <None Remove="Images\리사이즈로고.png" />
     <None Remove="Images\배경검정보라로고.png" />
     <None Remove="Images\배경로고.png" />
+    <None Remove="log4net.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -110,6 +117,7 @@
     <PackageReference Include="DevExpress.Wpf.Themes.All" Version="22.2.4">
       <GeneratePathProperty>True</GeneratePathProperty>
     </PackageReference>
+    <PackageReference Include="log4net" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.20">
       <PrivateAssets>all</PrivateAssets>

@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,11 +21,41 @@ namespace MCC_Launcher
         public DbSet<ProgramEntity> Programs { get; set; }
         public DbSet<ProgramVersionEntity> ProgramVersion { get; set; }
         public DbSet<RoleProgramPermission> RoleProgramPermissions { get; set; }
-        public DbSet<UserProgramPeriod> UserProgramPeriods { get; set; } //
+        public DbSet<UserProgramPeriod> UserProgramPeriods { get; set; } 
         //public DbSet<LauncherInfo> Launchers { get; set; }
+
+
+        public static readonly log4net.ILog log = log4net.LogManager.GetLogger(typeof(LauncherDbContext));
+
+        //private static readonly log4net.ILog log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=launcherdb;Username=postgres;Password=1234")
+        //        .EnableSensitiveDataLogging().LogTo(msg =>
+        //    {
+        //        if (!string.IsNullOrEmpty(msg))
+        //        {
+        //            log.Info(msg); // 로그에 기록
+        //            log.Debug(msg);
+        //        }
+        //    }, Microsoft.Extensions.Logging.LogLevel.Information);//로그필터 
+        //}
+
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=launcherdb;Username=postgres;Password=1234");
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=launcherdb;Username=postgres;Password=1234")
+                .EnableSensitiveDataLogging().LogTo(msg =>
+                {
+                    if (!string.IsNullOrEmpty(msg))
+                    {
+                        log.Info(msg); // 로그에 기록
+                        //log.Debug(msg);
+                        //log.Error(msg);
+
+                    }
+                }, Microsoft.Extensions.Logging.LogLevel.Information);//로그필터 
         }
 
         //    protected override void OnModelCreating(ModelBuilder modelBuilder)

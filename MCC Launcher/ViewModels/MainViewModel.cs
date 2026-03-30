@@ -25,6 +25,8 @@ using DevExpress.Xpf.Core;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic.Logging;
+using log4net;
 
 
 
@@ -36,7 +38,7 @@ namespace MCC_Launcher.ViewModels
         //public string programsRootFolder = @"\\Gms-mcc-nas01\audio-file\test1\programs";// xml db 이전용 
 
 
-      private readonly RealLauncherService ReallauncherService = new RealLauncherService();
+        private readonly RealLauncherService ReallauncherService = new RealLauncherService();
 
 
         private readonly LauncherService launcherService = new LauncherService();
@@ -198,7 +200,7 @@ namespace MCC_Launcher.ViewModels
             {
                 SetValue(value, changedCallback: InstallOrRun);
                 RaisePropertiesChanged(nameof(PatchNote));
-                
+
             }
 
         }
@@ -425,11 +427,11 @@ namespace MCC_Launcher.ViewModels
                 if (SelectedVersion1 == null)
                     return;
 
-              var  isInstalled = ReallauncherService.IsProgramInstalled2(SelectedVersion1.InstallPath, SelectedProgram1.ProgramName, SelectedVersion1.VersionName);// 폴더 존재확인 실행 파일 유무로 확인하는게 나을듯 
+                var isInstalled = ReallauncherService.IsProgramInstalled2(SelectedVersion1.InstallPath, SelectedProgram1.ProgramName, SelectedVersion1.VersionName);// 폴더 존재확인 실행 파일 유무로 확인하는게 나을듯 
 
 
                 // 실행 조건
-                if (isInstalled )//설치 
+                if (isInstalled)//설치 
                 {
                     var result = MessageBoxService.Show($"{SelectedProgram1.ProgramName} 프로그램을 실행합니다.", "실행", MessageBoxButton.OK);
                     if (result == MessageBoxResult.OK)
@@ -449,14 +451,14 @@ namespace MCC_Launcher.ViewModels
                 }
 
                 // 설치 조건
-                if (!isInstalled ) // 미설치 
+                if (!isInstalled) // 미설치 
                 {
                     var result = MessageBoxService.Show($"{SelectedProgram1.ProgramName} 프로그램을 설치하시겠습니까?", "설치", MessageBoxButton.YesNo);
                     if (result == MessageBoxResult.Yes)
                     {
                         var progress = new Progress<int>(value => ProgressBarValue = value);
                         //await launcherService.InstallProgram(progress, SelectedVersion.Path, SelectedProgram.FolderPath, SetProgressBarVisibility);
-                        await ReallauncherService.ProgramSetupAsync(progress, SelectedProgram1, SelectedVersion1,  SetProgressBarVisibility);
+                        await ReallauncherService.ProgramSetupAsync(progress, SelectedProgram1, SelectedVersion1, SetProgressBarVisibility);
 
                         //InstallProgram(SelectedProgram2, SelectedVersion1);
 
@@ -928,8 +930,8 @@ namespace MCC_Launcher.ViewModels
         }
         public void LoadProgramList2()// 이거들어갈 타이밍이 로그인한 다음 이어야한다. 
         {
-            ProgramsEntity.Clear();
 
+            ProgramsEntity.Clear();
             var programList = LoadProgramsFromDatabase();
 
             foreach (var program in programList)

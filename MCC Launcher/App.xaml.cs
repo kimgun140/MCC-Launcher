@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Windows;
 
@@ -22,6 +23,8 @@ namespace MCC_Launcher
             //ThemeManager.ApplicationThemeName = "Win11Dark"; // 어두운 테마
 
             ThemeManager.ApplicationThemeName = "VS2019Dark"; // 어두운 테마
+
+            log4net.Config.XmlConfigurator.Configure(new FileInfo("log4net.config"));
         }
     }
 }
